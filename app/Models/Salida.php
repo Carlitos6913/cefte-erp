@@ -32,4 +32,11 @@ class Salida extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public const MOTIVO_VENTA = 'venta';
+
+    public function autorizaVenta(): bool
+    {
+        return $this->motivo === self::MOTIVO_VENTA && $this->estado === 'activo';
+    }
 }

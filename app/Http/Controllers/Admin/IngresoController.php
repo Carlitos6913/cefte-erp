@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Ingreso;
 use App\Models\ProductVariant;
+use App\Services\InventarioService;
+use App\Services\NumeradorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +15,18 @@ use Inertia\Inertia;
 
 class IngresoController extends Controller
 {
+    protected InventarioService $inventario;
+
+    protected NumeradorService $numerador;
+
+    public function __construct(
+        InventarioService $inventario,
+        NumeradorService $numerador,
+    ) {
+        $this->inventario = $inventario;
+        $this->numerador = $numerador;
+    }
+
     public function index()
     {
         $ingresos = Ingreso::with([
@@ -93,7 +107,7 @@ class IngresoController extends Controller
 
         DB::transaction(function () use ($validated) {
 
-            $numero = 'ING-'.now()->format('YmdHis');
+            $numero = $this->numerador->siguiente('ING');
 
             $total = collect($validated['detalles'])
                 ->sum(function ($detalle) {
@@ -124,8 +138,15 @@ class IngresoController extends Controller
                     'subtotal' => $subtotal,
                 ]);
 
-                ProductVariant::where('id', $detalle['product_variant_id'])
-                    ->increment('stock', $detalle['cantidad']);
+                $this->inventario->registrarMovimiento(
+                    $detalle['product_variant_id'],
+                    'entrada',
+                    $detalle['cantidad'],
+                    'ingreso',
+                    $ingreso->id,
+                    $numero,
+                    Auth::id(),
+                );
             }
         });
 
@@ -238,9 +259,13 @@ class IngresoController extends Controller
              *    el ingreso anterior.
              */
             foreach ($ingreso->detalles as $detalle) {
-
-                ProductVariant::where('id', $detalle->product_variant_id)
-                    ->decrement('stock', $detalle->cantidad);
+                $this->inventario->revertir(
+                    $detalle->product_variant_id,
+                    $detalle->cantidad,
+                    'ingreso',
+                    $ingreso->id,
+                    Auth::id(),
+                );
             }
 
             /*
@@ -284,8 +309,15 @@ class IngresoController extends Controller
                     'subtotal' => $subtotal,
                 ]);
 
-                ProductVariant::where('id', $detalle['product_variant_id'])
-                    ->increment('stock', $detalle['cantidad']);
+                $this->inventario->registrarMovimiento(
+                    $detalle['product_variant_id'],
+                    'entrada',
+                    $detalle['cantidad'],
+                    'ingreso',
+                    $ingreso->id,
+                    $ingreso->numero,
+                    Auth::id(),
+                );
             }
         });
 
@@ -312,9 +344,13 @@ class IngresoController extends Controller
              * Revertir el stock.
              */
             foreach ($ingreso->detalles as $detalle) {
-
-                ProductVariant::where('id', $detalle->product_variant_id)
-                    ->decrement('stock', $detalle->cantidad);
+                $this->inventario->revertir(
+                    $detalle->product_variant_id,
+                    $detalle->cantidad,
+                    'ingreso',
+                    $ingreso->id,
+                    Auth::id(),
+                );
             }
 
             /*

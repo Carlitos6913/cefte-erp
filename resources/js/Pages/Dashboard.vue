@@ -1,5 +1,5 @@
 <script setup>
-import { Link } from '@inertiajs/vue3'
+import { ref } from 'vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import Badge from '@/Components/UI/Badge.vue'
 
@@ -12,6 +12,14 @@ const props = defineProps({
     ingresosRecientes: Array,
     salidasRecientes: Array,
 })
+
+const tabs = [
+    { key: 'ventas', label: 'Ventas recientes' },
+    { key: 'ingresos', label: 'Ingresos recientes' },
+    { key: 'salidas', label: 'Salidas recientes' },
+]
+
+const tabActivo = ref('ventas')
 
 const formatoMoneda = (valor) => {
     return Number(valor).toFixed(2)
@@ -108,10 +116,27 @@ const listaProductos = (detalles) => {
         </div>
 
         <!-- Tablas -->
-        <div class="space-y-5 mt-6">
+        <div class="mt-6">
+
+            <!-- Menú de selección -->
+            <div class="border-b border-slate-200">
+                <nav class="flex gap-1 overflow-x-auto">
+                    <button
+                        v-for="tab in tabs"
+                        :key="tab.key"
+                        @click="tabActivo = tab.key"
+                        class="px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors"
+                        :class="tabActivo === tab.key
+                            ? 'border-emerald-600 text-emerald-700'
+                            : 'border-transparent text-slate-500 hover:text-slate-700'"
+                    >
+                        {{ tab.label }}
+                    </button>
+                </nav>
+            </div>
 
             <!-- Ventas recientes -->
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div v-if="tabActivo === 'ventas'" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mt-5">
 
                 <div class="p-5 border-b border-slate-100">
                     <div class="flex items-center justify-between">
@@ -119,9 +144,7 @@ const listaProductos = (detalles) => {
                             <h2 class="text-base font-bold text-slate-800">Ventas recientes</h2>
                             <p class="text-xs text-slate-400 mt-0.5">Últimas operaciones registradas</p>
                         </div>
-                        <Link href="/ventas" class="text-xs font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition">
-                            Ver todas
-                        </Link>
+                        
                     </div>
                 </div>
 
@@ -168,7 +191,7 @@ const listaProductos = (detalles) => {
             </div>
 
             <!-- Ingresos recientes -->
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div v-if="tabActivo === 'ingresos'" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mt-5">
 
                 <div class="p-5 border-b border-slate-100">
                     <div class="flex items-center justify-between">
@@ -176,9 +199,7 @@ const listaProductos = (detalles) => {
                             <h2 class="text-base font-bold text-slate-800">Ingresos recientes</h2>
                             <p class="text-xs text-slate-400 mt-0.5">Últimos ingresos al almacén</p>
                         </div>
-                        <Link href="/ingresos" class="text-xs font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition">
-                            Ver todos
-                        </Link>
+                        
                     </div>
                 </div>
 
@@ -219,7 +240,7 @@ const listaProductos = (detalles) => {
             </div>
 
             <!-- Salidas recientes -->
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div v-if="tabActivo === 'salidas'" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mt-5">
 
                 <div class="p-5 border-b border-slate-100">
                     <div class="flex items-center justify-between">
@@ -227,9 +248,7 @@ const listaProductos = (detalles) => {
                             <h2 class="text-base font-bold text-slate-800">Salidas recientes</h2>
                             <p class="text-xs text-slate-400 mt-0.5">Últimas salidas del almacén</p>
                         </div>
-                        <Link href="/salidas" class="text-xs font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition">
-                            Ver todas
-                        </Link>
+                        
                     </div>
                 </div>
 

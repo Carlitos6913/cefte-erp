@@ -6,6 +6,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3'
 const props = defineProps({ salida: Object, productos: Array })
 
 const motivos = [
+    { value: 'venta', label: 'Despacho para venta' },
     { value: 'dano', label: 'Daño' },
     { value: 'vencimiento', label: 'Vencimiento' },
     { value: 'degusto', label: 'Degusto / Muestra' },
@@ -83,6 +84,9 @@ const actualizar = () => {
                         <option v-for="m in motivos" :key="m.value" :value="m.value">{{ m.label }}</option>
                     </select>
                     <p v-if="form.errors.motivo" class="text-sm text-red-600 mt-1">{{ form.errors.motivo }}</p>
+                    <p v-if="form.motivo === 'venta'" class="text-xs text-emerald-600 mt-1">
+                        Esta salida habilita la venta de los productos despachados.
+                    </p>
                 </div>
 
                 <div>

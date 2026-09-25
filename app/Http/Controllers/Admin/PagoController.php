@@ -69,7 +69,13 @@ class PagoController extends Controller
             'observaciones' => ['nullable', 'string'],
         ]);
 
-        $venta = Venta::findOrFail($validated['venta_id']);
+        $venta = Venta::whereKey($validated['venta_id'])
+            ->lockForUpdate()
+            ->first();
+
+        if (! $venta) {
+            return back()->with('error', 'La venta no existe.');
+        }
 
         if ($venta->saldo_pendiente <= 0) {
             return back()->with('error', 'Esta venta ya está pagada completamente.');

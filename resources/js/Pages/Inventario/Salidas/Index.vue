@@ -17,12 +17,12 @@ const formatoFecha = (fecha) => {
 const formatoMoneda = (valor) => Number(valor).toFixed(2)
 
 const motivoLabel = (motivo) => {
-    const map = { dano: 'Daño', vencimiento: 'Vencimiento', degusto: 'Degusto/Muestra', donacion: 'Donación', ajuste: 'Ajuste', otro: 'Otro' }
+    const map = { venta: 'Despacho para venta', dano: 'Daño', vencimiento: 'Vencimiento', degusto: 'Degusto/Muestra', donacion: 'Donación', ajuste: 'Ajuste', otro: 'Otro' }
     return map[motivo] ?? motivo
 }
 
 const motivoColor = (motivo) => {
-    const map = { dano: 'red', vencimiento: 'orange', degusto: 'purple', donacion: 'blue', ajuste: 'gray', otro: 'gray' }
+    const map = { venta: 'green', dano: 'red', vencimiento: 'orange', degusto: 'purple', donacion: 'blue', ajuste: 'gray', otro: 'gray' }
     return map[motivo] ?? 'gray'
 }
 

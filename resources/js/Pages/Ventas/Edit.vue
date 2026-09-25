@@ -53,11 +53,11 @@ const stockDisponible = (detalle) => {
     const producto = productoSeleccionado(detalle)
     if (!producto) return 0
 
-    const comprometido = props.venta.detalles
+    const consumido = props.venta.detalles
         .filter(d => d.product_variant_id == detalle.product_variant_id)
         .reduce((sum, d) => sum + d.cantidad, 0)
 
-    return producto.stock + comprometido
+    return Number(producto.saldo_autorizado ?? 0) + consumido
 }
 
 const subtotal = (detalle) => {
@@ -237,12 +237,13 @@ const actualizar = () => {
         <div class="flex items-center justify-between mb-5">
 
             <div>
-                <h2 class="text-lg font-semibold text-slate-800">
-                    Productos
-                </h2>
-                <p class="text-sm text-slate-500">
-                    Modifica las cantidades, productos o precios.
-                </p>
+<h2 class="text-lg font-semibold text-slate-800">
+                        Productos
+                    </h2>
+                    <p class="text-sm text-slate-500">
+                        Modifica las cantidades, productos o precios.
+                        Solo hay saldo autorizado para venta si existe una salida de despacho activa.
+                    </p>
             </div>
 
             <Button color="info" @click="agregarDetalle">
@@ -263,7 +264,7 @@ const actualizar = () => {
                             Producto
                         </th>
                         <th class="text-left p-3 text-sm font-semibold text-slate-600">
-                            Stock
+                            Autorizado
                         </th>
                         <th class="text-left p-3 text-sm font-semibold text-slate-600">
                             Cantidad

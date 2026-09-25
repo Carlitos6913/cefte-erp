@@ -6,13 +6,28 @@ use App\Http\Controllers\Controller;
 use App\Models\Cliente;
 use App\Models\ProductVariant;
 use App\Models\Venta;
+use App\Services\NumeradorService;
+use App\Services\SalidaVentaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use RuntimeException;
 
 class VentaController extends Controller
 {
+    protected NumeradorService $numerador;
+
+    protected SalidaVentaService $salidaVenta;
+
+    public function __construct(
+        NumeradorService $numerador,
+        SalidaVentaService $salidaVenta,
+    ) {
+        $this->numerador = $numerador;
+        $this->salidaVenta = $salidaVenta;
+    }
+
     public function index()
     {
         $ventas = Venta::with([
@@ -33,20 +48,29 @@ class VentaController extends Controller
 
     public function create()
     {
+        $saldos = $this->salidaVenta->saldosPorVariante();
+
+        $productos = ProductVariant::where('is_active', true)
+            ->with('unitMeasure:id,name,symbol')
+            ->with('product:id,name,code')
+            ->whereIn('id', array_keys($saldos))
+            ->orderBy('sku')
+            ->get([
+                'id',
+                'product_id',
+                'unit_measure_id',
+                'sku',
+                'unit_price',
+                'stock',
+            ])
+            ->map(function ($producto) use ($saldos) {
+                $producto->saldo_autorizado = (int) ($saldos[$producto->id] ?? 0);
+
+                return $producto;
+            });
+
         return Inertia::render('Ventas/Create', [
-            'productos' => ProductVariant::where('is_active', true)
-                ->with('unitMeasure:id,name,symbol')
-                ->with('product:id,name,code')
-                ->where('stock', '>', 0)
-                ->orderBy('sku')
-                ->get([
-                    'id',
-                    'product_id',
-                    'unit_measure_id',
-                    'sku',
-                    'unit_price',
-                    'stock',
-                ]),
+            'productos' => $productos,
             'clientes' => Cliente::where('activo', true)
                 ->orderBy('nombre')
                 ->get([
@@ -71,60 +95,60 @@ class VentaController extends Controller
             'detalles.*.precio_unitario' => ['required', 'numeric', 'min:0'],
         ]);
 
-        foreach ($validated['detalles'] as $detalle) {
-            $variante = ProductVariant::findOrFail($detalle['product_variant_id']);
+        try {
+            DB::transaction(function () use ($validated) {
 
-            if ($variante->stock < $detalle['cantidad']) {
-                return back()->withErrors([
-                    'detalles' => "Stock insuficiente para \"{$variante->product->name}\". Disponible: {$variante->stock}.",
-                ])->withInput();
-            }
-        }
+                foreach ($validated['detalles'] as $detalle) {
+                    $this->validarSaldo($detalle['product_variant_id'], $detalle['cantidad'], 0);
+                }
 
-        DB::transaction(function () use ($validated) {
+                $numero = $this->numerador->siguiente('VEN');
 
-            $numero = 'VEN-'.now()->format('YmdHis');
+                $total = collect($validated['detalles'])
+                    ->sum(fn ($detalle) => $detalle['cantidad'] * $detalle['precio_unitario']);
 
-            $total = collect($validated['detalles'])
-                ->sum(function ($detalle) {
-                    return $detalle['cantidad']
-                        * $detalle['precio_unitario'];
-                });
+                $saldoPendiente = $validated['pago_tipo'] === 'credito'
+                    ? $total
+                    : 0;
 
-            $saldoPendiente = $validated['pago_tipo'] === 'credito'
-                ? $total
-                : 0;
-
-            $venta = Venta::create([
-                'numero' => $numero,
-                'fecha' => $validated['fecha'],
-                'cliente_id' => $validated['cliente_id'] ?? null,
-                'cliente' => $validated['cliente'] ?? null,
-                'observaciones' => $validated['observaciones'] ?? null,
-                'total' => $total,
-                'estado' => 'activo',
-                'pago_tipo' => $validated['pago_tipo'],
-                'saldo_pendiente' => $saldoPendiente,
-                'user_id' => Auth::id(),
-            ]);
-
-            foreach ($validated['detalles'] as $detalle) {
-
-                $subtotal =
-                    $detalle['cantidad']
-                    * $detalle['precio_unitario'];
-
-                $venta->detalles()->create([
-                    'product_variant_id' => $detalle['product_variant_id'],
-                    'cantidad' => $detalle['cantidad'],
-                    'precio_unitario' => $detalle['precio_unitario'],
-                    'subtotal' => $subtotal,
+                $venta = Venta::create([
+                    'numero' => $numero,
+                    'fecha' => $validated['fecha'],
+                    'cliente_id' => $validated['cliente_id'] ?? null,
+                    'cliente' => $validated['cliente'] ?? null,
+                    'observaciones' => $validated['observaciones'] ?? null,
+                    'total' => $total,
+                    'estado' => 'activo',
+                    'pago_tipo' => $validated['pago_tipo'],
+                    'saldo_pendiente' => $saldoPendiente,
+                    'user_id' => Auth::id(),
                 ]);
 
-                ProductVariant::where('id', $detalle['product_variant_id'])
-                    ->decrement('stock', $detalle['cantidad']);
-            }
-        });
+                foreach ($validated['detalles'] as $detalle) {
+
+                    $subtotal = $detalle['cantidad'] * $detalle['precio_unitario'];
+
+                    $ventaDetalle = $venta->detalles()->create([
+                        'product_variant_id' => $detalle['product_variant_id'],
+                        'cantidad' => $detalle['cantidad'],
+                        'precio_unitario' => $detalle['precio_unitario'],
+                        'subtotal' => $subtotal,
+                    ]);
+
+                    // La salida ya movió el stock físico; la venta solo
+                    // consume el saldo autorizado de despacho.
+                    $this->salidaVenta->consumir(
+                        $detalle['product_variant_id'],
+                        $detalle['cantidad'],
+                        $ventaDetalle->id,
+                    );
+                }
+            });
+        } catch (RuntimeException $e) {
+            return back()->withErrors([
+                'detalles' => $e->getMessage(),
+            ])->withInput();
+        }
 
         return redirect()
             ->route('ventas.index')
@@ -162,20 +186,29 @@ class VentaController extends Controller
                 ->with('error', 'No se puede editar una venta anulada.');
         }
 
+        $saldos = $this->salidaVenta->saldosPorVariante();
+
+        $productos = ProductVariant::where('is_active', true)
+            ->with('unitMeasure:id,name,symbol')
+            ->with('product:id,name,code')
+            ->orderBy('sku')
+            ->get([
+                'id',
+                'product_id',
+                'unit_measure_id',
+                'sku',
+                'unit_price',
+                'stock',
+            ])
+            ->map(function ($producto) use ($saldos) {
+                $producto->saldo_autorizado = (int) ($saldos[$producto->id] ?? 0);
+
+                return $producto;
+            });
+
         return Inertia::render('Ventas/Edit', [
             'venta' => $venta,
-            'productos' => ProductVariant::where('is_active', true)
-                ->with('unitMeasure:id,name,symbol')
-                ->with('product:id,name,code')
-                ->orderBy('sku')
-                ->get([
-                    'id',
-                    'product_id',
-                    'unit_measure_id',
-                    'sku',
-                    'unit_price',
-                    'stock',
-                ]),
+            'productos' => $productos,
             'clientes' => Cliente::where('activo', true)
                 ->orderBy('nombre')
                 ->get([
@@ -210,72 +243,85 @@ class VentaController extends Controller
             'detalles.*.precio_unitario' => ['required', 'numeric', 'min:0'],
         ]);
 
-        foreach ($validated['detalles'] as $detalle) {
-            $variante = ProductVariant::findOrFail($detalle['product_variant_id']);
+        $total = collect($validated['detalles'])
+            ->sum(fn ($detalle) => $detalle['cantidad'] * $detalle['precio_unitario']);
 
-            $stockActual = $variante->stock;
+        $pagosRecibidos = $venta->pagos()->sum('monto');
 
-            $stockComprometido = $venta->detalles
-                ->where('product_variant_id', $detalle['product_variant_id'])
-                ->sum('cantidad');
-
-            $stockDisponible = $stockActual + $stockComprometido;
-
-            if ($stockDisponible < $detalle['cantidad']) {
-                return back()->withErrors([
-                    'detalles' => "Stock insuficiente para \"{$variante->product->name}\". Disponible: {$stockDisponible}.",
-                ])->withInput();
-            }
+        if (bccomp((string) $total, (string) $pagosRecibidos, 2) < 0) {
+            return back()->withErrors([
+                'total' => 'El nuevo total (Bs. '.number_format($total, 2).') no puede ser '
+                    .'menor a lo ya pagado (Bs. '.number_format($pagosRecibidos, 2).').',
+            ])->withInput();
         }
 
-        DB::transaction(function () use ($venta, $validated) {
+        if ($validated['pago_tipo'] === 'contado'
+            && $pagosRecibidos > 0
+            && bccomp((string) $pagosRecibidos, (string) $total, 2) < 0) {
+            return back()->withErrors([
+                'pago_tipo' => 'La venta tiene pagos registrados (Bs. '.number_format($pagosRecibidos, 2)
+                    .') inferiores al total. Debe permanecer como crédito o completar el pago.',
+            ])->withInput();
+        }
 
-            foreach ($venta->detalles as $detalle) {
-                ProductVariant::where('id', $detalle->product_variant_id)
-                    ->increment('stock', $detalle->cantidad);
-            }
+        $saldoPendiente = $validated['pago_tipo'] === 'credito'
+            ? max(0, $total - $pagosRecibidos)
+            : 0;
 
-            $venta->detalles()->delete();
+        try {
+            DB::transaction(function () use ($venta, $validated, $saldoPendiente, $total) {
 
-            $total = collect($validated['detalles'])
-                ->sum(function ($detalle) {
-                    return $detalle['cantidad']
-                        * $detalle['precio_unitario'];
-                });
+                // El saldo consumido actualmente por esta venta se
+                // devuelve al validar, así que se suma a lo disponible.
+                foreach ($validated['detalles'] as $detalle) {
+                    $consumidoPorVenta = (int) $venta->detalles
+                        ->where('product_variant_id', $detalle['product_variant_id'])
+                        ->sum('cantidad');
 
-            $pagosRecibidos = $venta->pagos()->sum('monto');
+                    $this->validarSaldo(
+                        $detalle['product_variant_id'],
+                        $detalle['cantidad'],
+                        $consumidoPorVenta,
+                    );
+                }
 
-            $saldoPendiente = $validated['pago_tipo'] === 'credito'
-                ? max(0, $total - $pagosRecibidos)
-                : 0;
+                // Devolver el saldo consumido por los detalles anteriores.
+                $this->salidaVenta->liberarVenta($venta->id);
+                $venta->detalles()->delete();
 
-            $venta->update([
-                'fecha' => $validated['fecha'],
-                'cliente_id' => $validated['cliente_id'] ?? null,
-                'cliente' => $validated['cliente'] ?? null,
-                'observaciones' => $validated['observaciones'] ?? null,
-                'total' => $total,
-                'pago_tipo' => $validated['pago_tipo'],
-                'saldo_pendiente' => $saldoPendiente,
-            ]);
-
-            foreach ($validated['detalles'] as $detalle) {
-
-                $subtotal =
-                    $detalle['cantidad']
-                    * $detalle['precio_unitario'];
-
-                $venta->detalles()->create([
-                    'product_variant_id' => $detalle['product_variant_id'],
-                    'cantidad' => $detalle['cantidad'],
-                    'precio_unitario' => $detalle['precio_unitario'],
-                    'subtotal' => $subtotal,
+                $venta->update([
+                    'fecha' => $validated['fecha'],
+                    'cliente_id' => $validated['cliente_id'] ?? null,
+                    'cliente' => $validated['cliente'] ?? null,
+                    'observaciones' => $validated['observaciones'] ?? null,
+                    'total' => $total,
+                    'pago_tipo' => $validated['pago_tipo'],
+                    'saldo_pendiente' => $saldoPendiente,
                 ]);
 
-                ProductVariant::where('id', $detalle['product_variant_id'])
-                    ->decrement('stock', $detalle['cantidad']);
-            }
-        });
+                foreach ($validated['detalles'] as $detalle) {
+
+                    $subtotal = $detalle['cantidad'] * $detalle['precio_unitario'];
+
+                    $ventaDetalle = $venta->detalles()->create([
+                        'product_variant_id' => $detalle['product_variant_id'],
+                        'cantidad' => $detalle['cantidad'],
+                        'precio_unitario' => $detalle['precio_unitario'],
+                        'subtotal' => $subtotal,
+                    ]);
+
+                    $this->salidaVenta->consumir(
+                        $detalle['product_variant_id'],
+                        $detalle['cantidad'],
+                        $ventaDetalle->id,
+                    );
+                }
+            });
+        } catch (RuntimeException $e) {
+            return back()->withErrors([
+                'detalles' => $e->getMessage(),
+            ])->withInput();
+        }
 
         return redirect()
             ->route('ventas.show', $venta->id)
@@ -296,10 +342,9 @@ class VentaController extends Controller
 
         DB::transaction(function () use ($venta) {
 
-            foreach ($venta->detalles as $detalle) {
-                ProductVariant::where('id', $detalle->product_variant_id)
-                    ->increment('stock', $detalle->cantidad);
-            }
+            // Devolver el saldo autorizado consumido; el stock físico
+            // ya fue movido por la salida de despacho.
+            $this->salidaVenta->liberarVenta($venta->id);
 
             $venta->update([
                 'estado' => 'anulado',
@@ -310,5 +355,19 @@ class VentaController extends Controller
         return redirect()
             ->route('ventas.index')
             ->with('success', 'Venta anulada correctamente.');
+    }
+
+    private function validarSaldo(int $productVariantId, int $cantidad, int $consumidoPorVenta): void
+    {
+        $disponible = $this->salidaVenta->saldoDisponible($productVariantId) + $consumidoPorVenta;
+
+        if ($cantidad > $disponible) {
+            $variante = ProductVariant::with('product')->find($productVariantId);
+            $nombre = $variante?->product?->name ?? $productVariantId;
+
+            throw new RuntimeException(
+                "Sin saldo autorizado suficiente para \"{$nombre}\". Autorizado disponible: {$disponible}."
+            );
+        }
     }
 }

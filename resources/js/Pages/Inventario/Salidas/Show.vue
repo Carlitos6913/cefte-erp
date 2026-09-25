@@ -14,12 +14,12 @@ const formatoFecha = (fecha) => {
 const formatoMoneda = (valor) => Number(valor).toFixed(2)
 
 const motivoLabel = (motivo) => {
-    const map = { dano: 'Daño', vencimiento: 'Vencimiento', degusto: 'Degusto/Muestra', donacion: 'Donación', ajuste: 'Ajuste', otro: 'Otro' }
+    const map = { venta: 'Despacho para venta', dano: 'Daño', vencimiento: 'Vencimiento', degusto: 'Degusto/Muestra', donacion: 'Donación', ajuste: 'Ajuste', otro: 'Otro' }
     return map[motivo] ?? motivo
 }
 
 const motivoColor = (motivo) => {
-    const map = { dano: 'red', vencimiento: 'orange', degusto: 'purple', donacion: 'blue', ajuste: 'gray', otro: 'gray' }
+    const map = { venta: 'green', dano: 'red', vencimiento: 'orange', degusto: 'purple', donacion: 'blue', ajuste: 'gray', otro: 'gray' }
     return map[motivo] ?? 'gray'
 }
 </script>
@@ -97,7 +97,15 @@ const motivoColor = (motivo) => {
                                 <td class="p-4 font-medium text-slate-700">{{ detalle.product_variant?.sku }}</td>
                                 <td class="p-4 text-slate-700">{{ detalle.product_variant?.product?.name }}</td>
                                 <td class="p-4 text-slate-500">{{ detalle.product_variant?.unit_measure?.name }}</td>
-                                <td class="p-4 text-right font-semibold text-red-600">-{{ detalle.cantidad }}</td>
+                                <td class="p-4 text-right font-semibold text-red-600">
+                                    -{{ detalle.cantidad }}
+                                    <span
+                                        v-if="detalle.cantidad_vendida > 0"
+                                        class="block text-xs text-emerald-600 font-medium"
+                                    >
+                                        {{ detalle.cantidad_vendida }} vendido
+                                    </span>
+                                </td>
                                 <td class="p-4 text-right">Bs. {{ formatoMoneda(detalle.precio_unitario) }}</td>
                                 <td class="p-4 text-right font-semibold text-slate-800">Bs. {{ formatoMoneda(detalle.subtotal) }}</td>
                             </tr>

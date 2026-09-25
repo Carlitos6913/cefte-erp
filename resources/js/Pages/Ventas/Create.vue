@@ -60,7 +60,7 @@ const actualizarPrecio = (detalle) => {
 
 const stockDisponible = (detalle) => {
     const producto = productoSeleccionado(detalle)
-    return producto ? producto.stock : 0
+    return producto ? Number(producto.saldo_autorizado ?? 0) : 0
 }
 
 
@@ -265,7 +265,14 @@ const registrar = () => {
 
                     <div class="overflow-x-auto">
 
+                        <div class="border-b border-slate-200">
+                            <p class="text-sm text-slate-500 px-6 pb-4">
+                                Solo se pueden vender productos con salida de despacho (motivo «Despacho para venta») aún autorizada.
+                            </p>
+                        </div>
+
                         <table class="w-full">
+
 
                             <thead class="bg-slate-50">
 
@@ -274,7 +281,7 @@ const registrar = () => {
                                         Producto
                                     </th>
                                     <th class="p-4 text-left text-sm font-semibold">
-                                        Stock
+                                        Autorizado
                                     </th>
                                     <th class="p-4 text-left text-sm font-semibold">
                                         Cantidad

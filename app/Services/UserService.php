@@ -57,6 +57,7 @@ class UserService
             'password' => Hash::make($password),
             'is_active' => true,
             'employee_id' => $employee->id,
+            'must_change_password' => true,
         ]);
 
         $user->assignRole($roleName);
@@ -113,6 +114,7 @@ class UserService
         if (! empty($data['password'])) {
             $user->update([
                 'password' => Hash::make($data['password']),
+                'must_change_password' => true,
             ]);
         }
 

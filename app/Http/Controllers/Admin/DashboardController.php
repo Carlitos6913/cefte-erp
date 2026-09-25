@@ -35,21 +35,18 @@ class DashboardController extends Controller
             ->where('estado', 'activo')
             ->latest('fecha')
             ->latest('id')
-            ->limit(5)
             ->get();
 
         $ingresosRecientes = Ingreso::with(['usuario', 'detalles.productVariant.product'])
             ->where('estado', 'activo')
             ->latest('fecha')
             ->latest('id')
-            ->limit(5)
             ->get();
 
         $salidasRecientes = Salida::with(['usuario', 'detalles.productVariant.product'])
             ->where('estado', 'activo')
             ->latest('fecha')
             ->latest('id')
-            ->limit(5)
             ->get();
 
         return Inertia::render('Dashboard', [

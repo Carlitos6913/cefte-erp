@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ProductVariant;
 use App\Models\Salida;
+use App\Services\InventarioService;
+use App\Services\NumeradorService;
+use App\Services\SalidaVentaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +15,22 @@ use Inertia\Inertia;
 
 class SalidaController extends Controller
 {
+    protected InventarioService $inventario;
+
+    protected NumeradorService $numerador;
+
+    protected SalidaVentaService $salidaVenta;
+
+    public function __construct(
+        InventarioService $inventario,
+        NumeradorService $numerador,
+        SalidaVentaService $salidaVenta,
+    ) {
+        $this->inventario = $inventario;
+        $this->numerador = $numerador;
+        $this->salidaVenta = $salidaVenta;
+    }
+
     public function index()
     {
         $salidas = Salida::with([
@@ -52,9 +71,19 @@ class SalidaController extends Controller
             'detalles.*.cantidad' => ['required', 'integer', 'min:1'],
         ]);
 
+        foreach ($validated['detalles'] as $detalle) {
+            $variante = ProductVariant::find($detalle['product_variant_id']);
+
+            if ($variante && $variante->stock < $detalle['cantidad']) {
+                return back()->withErrors([
+                    'detalles' => "Stock insuficiente para \"{$variante->product->name}\". Disponible: {$variante->stock}.",
+                ])->withInput();
+            }
+        }
+
         DB::transaction(function () use ($validated) {
 
-            $numero = 'SAL-'.now()->format('YmdHis');
+            $numero = $this->numerador->siguiente('SAL');
 
             $total = 0;
 
@@ -81,8 +110,15 @@ class SalidaController extends Controller
                     'subtotal' => $subtotal,
                 ]);
 
-                ProductVariant::where('id', $detalle['product_variant_id'])
-                    ->decrement('stock', $detalle['cantidad']);
+                $this->inventario->registrarMovimiento(
+                    $detalle['product_variant_id'],
+                    'salida',
+                    $detalle['cantidad'],
+                    'salida',
+                    $salida->id,
+                    $numero,
+                    Auth::id(),
+                );
             }
 
             $salida->update(['total' => $total]);
@@ -121,6 +157,12 @@ class SalidaController extends Controller
                 ->with('error', 'No se puede editar una salida anulada.');
         }
 
+        if ($this->salidaVenta->salidaTieneVendidos($salida->id)) {
+            return redirect()
+                ->route('salidas.show', $salida->id)
+                ->with('error', 'No se puede editar una salida con detalles ya vendidos. Anule la venta correspondiente primero.');
+        }
+
         return Inertia::render('Inventario/Salidas/Edit', [
             'salida' => $salida,
             'productos' => ProductVariant::where('is_active', true)
@@ -139,6 +181,13 @@ class SalidaController extends Controller
             return back()->with('error', 'No se puede modificar una salida anulada.');
         }
 
+        if ($this->salidaVenta->salidaTieneVendidos($salida->id)) {
+            return back()->with(
+                'error',
+                'No se puede modificar una salida con detalles ya vendidos. Anule la venta correspondiente primero.'
+            );
+        }
+
         $validated = $request->validate([
             'fecha' => ['required', 'date'],
             'motivo' => ['required', 'string', 'max:50'],
@@ -151,8 +200,13 @@ class SalidaController extends Controller
         DB::transaction(function () use ($salida, $validated) {
 
             foreach ($salida->detalles as $detalle) {
-                ProductVariant::where('id', $detalle->product_variant_id)
-                    ->increment('stock', $detalle->cantidad);
+                $this->inventario->revertir(
+                    $detalle->product_variant_id,
+                    $detalle->cantidad,
+                    'salida',
+                    $salida->id,
+                    Auth::id(),
+                );
             }
 
             $salida->detalles()->delete();
@@ -171,8 +225,15 @@ class SalidaController extends Controller
                     'subtotal' => $subtotal,
                 ]);
 
-                ProductVariant::where('id', $detalle['product_variant_id'])
-                    ->decrement('stock', $detalle['cantidad']);
+                $this->inventario->registrarMovimiento(
+                    $detalle['product_variant_id'],
+                    'salida',
+                    $detalle['cantidad'],
+                    'salida',
+                    $salida->id,
+                    $salida->numero,
+                    Auth::id(),
+                );
             }
 
             $salida->update([
@@ -196,11 +257,23 @@ class SalidaController extends Controller
             return back()->with('error', 'La salida ya se encuentra anulada.');
         }
 
+        if ($this->salidaVenta->salidaTieneVendidos($salida->id)) {
+            return back()->with(
+                'error',
+                'No se puede anular una salida con detalles ya vendidos. Anule la venta correspondiente primero.'
+            );
+        }
+
         DB::transaction(function () use ($salida) {
 
             foreach ($salida->detalles as $detalle) {
-                ProductVariant::where('id', $detalle->product_variant_id)
-                    ->increment('stock', $detalle->cantidad);
+                $this->inventario->revertir(
+                    $detalle->product_variant_id,
+                    $detalle->cantidad,
+                    'salida',
+                    $salida->id,
+                    Auth::id(),
+                );
             }
 
             $salida->update(['estado' => 'anulado']);
