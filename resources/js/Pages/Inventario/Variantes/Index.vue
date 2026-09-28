@@ -4,6 +4,7 @@ import { Head, Link, router } from '@inertiajs/vue3'
 
 import AppLayout from '@/Layouts/AppLayout.vue'
 import Table from '@/Components/UI/Table.vue'
+import Pagination from '@/Components/UI/Pagination.vue'
 import Badge from '@/Components/UI/Badge.vue'
 import Button from '@/Components/UI/Button.vue'
 
@@ -115,11 +116,11 @@ const toggleActivo = (id, activo) => {
 
         <!-- Encabezado -->
 
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
 
             <div>
 
-                <h1 class="text-3xl font-bold text-slate-800">
+                <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">
                     Variantes
                 </h1>
 
@@ -130,7 +131,7 @@ const toggleActivo = (id, activo) => {
             </div>
 
 
-            <div class="flex items-center gap-3">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
 
                 <!-- Buscador -->
 
@@ -138,7 +139,7 @@ const toggleActivo = (id, activo) => {
                     v-model="buscar"
                     type="text"
                     placeholder="Buscar variante..."
-                    class="w-64 rounded-lg border-slate-300
+                    class="w-full sm:w-64 rounded-lg border-slate-300
                            focus:border-emerald-500
                            focus:ring-emerald-500"
                 />
@@ -172,14 +173,14 @@ const toggleActivo = (id, activo) => {
 
                 <!-- SKU -->
 
-                <td class="p-4 font-medium text-slate-700">
+                <td data-label="SKU" class="p-4 font-medium text-slate-700">
                     {{ variante.sku }}
                 </td>
 
 
                 <!-- Producto -->
 
-                <td class="p-4">
+                <td data-label="Producto" class="p-4">
 
                     <div class="font-medium text-slate-800">
                         {{ variante.product?.name }}
@@ -194,21 +195,21 @@ const toggleActivo = (id, activo) => {
 
                 <!-- Sabor -->
 
-                <td class="p-4 text-slate-600">
+                <td data-label="Sabor" class="p-4 text-slate-600">
                     {{ variante.flavor || '-' }}
                 </td>
 
 
                 <!-- Empaque -->
 
-                <td class="p-4 text-slate-600">
+                <td data-label="Empaque" class="p-4 text-slate-600">
                     {{ variante.packaging_type || '-' }}
                 </td>
 
 
                 <!-- Unidad -->
 
-                <td class="p-4 text-slate-600">
+                <td data-label="Unidad" class="p-4 text-slate-600">
                     {{ variante.unit_measure?.name }}
                     ({{ variante.unit_measure?.symbol }})
                 </td>
@@ -216,14 +217,14 @@ const toggleActivo = (id, activo) => {
 
                 <!-- Precio -->
 
-                <td class="p-4 text-slate-700">
+                <td data-label="Precio" class="p-4 text-slate-700">
                     Bs. {{ Number(variante.unit_price).toFixed(2) }}
                 </td>
 
 
                 <!-- Stock -->
 
-                <td class="p-4">
+                <td data-label="Stock" class="p-4">
 
                     <span class="font-semibold text-slate-700">
                         {{ variante.stock }}
@@ -234,7 +235,7 @@ const toggleActivo = (id, activo) => {
 
                 <!-- Estado -->
 
-                <td class="p-4">
+                <td data-label="Estado" class="p-4">
 
                     <Badge :color="colorVariante(variante)">
                         {{ estadoVariante(variante) }}
@@ -245,7 +246,7 @@ const toggleActivo = (id, activo) => {
 
                 <!-- Acciones -->
 
-                <td class="p-4">
+                <td class="p-4 table-actions">
 
                     <div class="flex gap-2">
 
@@ -277,7 +278,7 @@ const toggleActivo = (id, activo) => {
 
             <!-- Sin resultados -->
 
-            <tr v-if="variantes.data.length === 0">
+            <tr v-if="variantes.data.length === 0" class="table-empty">
 
                 <td
                     :colspan="headers.length"
@@ -291,40 +292,7 @@ const toggleActivo = (id, activo) => {
         </Table>
 
 
-        <!-- Paginación -->
-
-        <div
-            v-if="variantes.links && variantes.links.length > 3"
-            class="flex justify-center gap-1 mt-6"
-        >
-
-            <template
-                v-for="link in variantes.links"
-                :key="link.label"
-            >
-
-                <Link
-                    v-if="link.url"
-                    :href="link.url"
-                    v-html="link.label"
-                    preserve-scroll
-                    preserve-state
-                    class="px-3 py-2 rounded-lg border text-sm transition"
-                    :class="link.active
-                        ? 'bg-emerald-600 text-white border-emerald-600'
-                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
-                />
-
-                <span
-                    v-else
-                    v-html="link.label"
-                    class="px-3 py-2 rounded-lg border border-slate-200
-                           text-sm text-slate-300 bg-slate-50"
-                />
-
-            </template>
-
-        </div>
+        <Pagination :links="variantes.links" />
 
     </AppLayout>
 

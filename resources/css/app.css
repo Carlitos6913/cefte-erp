@@ -12,3 +12,99 @@
         @apply antialiased;
     }
 }
+
+/* En pantallas pequeñas las tablas de listado se convierten en tarjetas.
+   Cada <td> debe llevar data-label="..." para mostrar su cabecera. */
+@media (max-width: 767px) {
+    .table-responsive {
+        display: block;
+    }
+
+    .table-responsive thead {
+        display: none;
+    }
+
+    .table-responsive tbody {
+        display: block;
+    }
+
+    .table-responsive tbody tr {
+        display: block;
+        width: 100%;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        margin-bottom: 0.75rem;
+        background: #fff;
+    }
+
+    .table-responsive tbody td {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.35rem;
+        text-align: right;
+        padding: 0.7rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .table-responsive tbody td:last-child {
+        border-bottom: 0;
+    }
+
+    .table-responsive tbody td::before {
+        content: attr(data-label);
+        align-self: stretch;
+        font-weight: 600;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b;
+        text-align: left;
+        border-bottom: 1px solid #f1f5f9;
+        padding-bottom: 0.3rem;
+    }
+
+    .table-responsive tbody td.table-actions {
+        align-items: flex-end;
+        padding-top: 0.85rem;
+        padding-bottom: 0.85rem;
+    }
+
+    .table-responsive tbody td.table-actions::before {
+        display: none;
+    }
+
+    .table-responsive tbody tr.table-empty {
+        border: 0;
+        background: transparent;
+    }
+
+    .table-responsive tbody tr.table-empty td {
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        border-bottom: 0;
+    }
+
+    .table-responsive tbody tr.table-empty td::before {
+        display: none;
+    }
+
+    .table-responsive tfoot {
+        display: block;
+    }
+
+    .table-responsive tfoot tr {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        background: #f8fafc;
+        border-top: 2px solid #e2e8f0;
+    }
+
+    .table-responsive tfoot td {
+        padding: 1rem;
+        border-bottom: 0;
+    }
+}

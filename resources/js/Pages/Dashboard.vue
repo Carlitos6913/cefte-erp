@@ -149,7 +149,7 @@ const listaProductos = (detalles) => {
                 </div>
 
                 <div v-if="ventasRecientes.length">
-                    <table class="table-auto w-full text-sm">
+                    <table class="table-auto w-full text-sm table-responsive">
                         <thead>
                             <tr class="border-b border-slate-100">
                                 <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">Nro.</th>
@@ -166,12 +166,12 @@ const listaProductos = (detalles) => {
                                 :key="venta.id"
                                 class="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors"
                             >
-                                <td class="px-4 py-3 font-semibold text-slate-700 whitespace-nowrap">{{ venta.numero }}</td>
-                                <td class="px-4 py-3 text-slate-500 whitespace-nowrap">{{ formatoFecha(venta.fecha) }}</td>
-                                <td class="px-4 py-3 text-slate-600 whitespace-nowrap">{{ venta.clienteRelacion?.nombre ?? venta.cliente ?? '-' }}</td>
-                                <td class="px-4 py-3 text-slate-400 max-w-[200px] truncate" :title="listaProductos(venta.detalles)">{{ listaProductos(venta.detalles) }}</td>
-                                <td class="px-4 py-3 font-bold text-slate-800 whitespace-nowrap">Bs. {{ formatoMoneda(venta.total) }}</td>
-                                <td class="px-4 py-3 whitespace-nowrap">
+                                <td data-label="Nro." class="px-4 py-3 font-semibold text-slate-700 whitespace-nowrap">{{ venta.numero }}</td>
+                                <td data-label="Fecha" class="px-4 py-3 text-slate-500 whitespace-nowrap">{{ formatoFecha(venta.fecha) }}</td>
+                                <td data-label="Cliente" class="px-4 py-3 text-slate-600 whitespace-nowrap">{{ venta.clienteRelacion?.nombre ?? venta.cliente ?? '-' }}</td>
+                                <td data-label="Productos" class="px-4 py-3 text-slate-400 max-w-[200px] truncate" :title="listaProductos(venta.detalles)">{{ listaProductos(venta.detalles) }}</td>
+                                <td data-label="Total" class="px-4 py-3 font-bold text-slate-800 whitespace-nowrap">Bs. {{ formatoMoneda(venta.total) }}</td>
+                                <td data-label="Pago" class="px-4 py-3 whitespace-nowrap">
                                     <Badge :color="venta.pago_tipo === 'credito' ? 'yellow' : 'green'" class="text-[11px]">
                                         {{ venta.pago_tipo === 'credito' ? 'Crédito' : 'Contado' }}
                                     </Badge>
@@ -204,7 +204,7 @@ const listaProductos = (detalles) => {
                 </div>
 
                 <div v-if="ingresosRecientes.length">
-                    <table class="table-auto w-full text-sm">
+                    <table class="table-auto w-full text-sm table-responsive">
                         <thead>
                             <tr class="border-b border-slate-100">
                                 <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">Nro.</th>
@@ -220,11 +220,11 @@ const listaProductos = (detalles) => {
                                 :key="ingreso.id"
                                 class="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors"
                             >
-                                <td class="px-4 py-3 font-semibold text-slate-700 whitespace-nowrap">{{ ingreso.numero }}</td>
-                                <td class="px-4 py-3 text-slate-500 whitespace-nowrap">{{ formatoFecha(ingreso.fecha) }}</td>
-                                <td class="px-4 py-3 text-slate-400 max-w-[200px] truncate" :title="listaProductos(ingreso.detalles)">{{ listaProductos(ingreso.detalles) }}</td>
-                                <td class="px-4 py-3 text-slate-600 whitespace-nowrap">{{ ingreso.usuario?.name ?? '-' }}</td>
-                                <td class="px-4 py-3 text-slate-400">{{ ingreso.observaciones || '-' }}</td>
+                                <td data-label="Nro." class="px-4 py-3 font-semibold text-slate-700 whitespace-nowrap">{{ ingreso.numero }}</td>
+                                <td data-label="Fecha" class="px-4 py-3 text-slate-500 whitespace-nowrap">{{ formatoFecha(ingreso.fecha) }}</td>
+                                <td data-label="Productos" class="px-4 py-3 text-slate-400 max-w-[200px] truncate" :title="listaProductos(ingreso.detalles)">{{ listaProductos(ingreso.detalles) }}</td>
+                                <td data-label="Registrado por" class="px-4 py-3 text-slate-600 whitespace-nowrap">{{ ingreso.usuario?.name ?? '-' }}</td>
+                                <td data-label="Observaciones" class="px-4 py-3 text-slate-400">{{ ingreso.observaciones || '-' }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -253,7 +253,7 @@ const listaProductos = (detalles) => {
                 </div>
 
                 <div v-if="salidasRecientes.length">
-                    <table class="table-auto w-full text-sm">
+                    <table class="table-auto w-full text-sm table-responsive">
                         <thead>
                             <tr class="border-b border-slate-100">
                                 <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">Nro.</th>
@@ -269,15 +269,15 @@ const listaProductos = (detalles) => {
                                 :key="salida.id"
                                 class="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors"
                             >
-                                <td class="px-4 py-3 font-semibold text-slate-700 whitespace-nowrap">{{ salida.numero }}</td>
-                                <td class="px-4 py-3 text-slate-500 whitespace-nowrap">{{ formatoFecha(salida.fecha) }}</td>
-                                <td class="px-4 py-3 whitespace-nowrap">
+                                <td data-label="Nro." class="px-4 py-3 font-semibold text-slate-700 whitespace-nowrap">{{ salida.numero }}</td>
+                                <td data-label="Fecha" class="px-4 py-3 text-slate-500 whitespace-nowrap">{{ formatoFecha(salida.fecha) }}</td>
+                                <td data-label="Motivo" class="px-4 py-3 whitespace-nowrap">
                                     <Badge :color="salida.motivo === 'dano' ? 'red' : salida.motivo === 'vencimiento' ? 'orange' : 'gray'" class="text-[11px]">
                                         {{ salida.motivo === 'dano' ? 'Daño' : salida.motivo === 'vencimiento' ? 'Vencimiento' : salida.motivo === 'degusto' ? 'Degusto' : salida.motivo === 'donacion' ? 'Donación' : salida.motivo }}
                                     </Badge>
                                 </td>
-                                <td class="px-4 py-3 text-slate-400 max-w-[200px] truncate" :title="listaProductos(salida.detalles)">{{ listaProductos(salida.detalles) }}</td>
-                                <td class="px-4 py-3 text-slate-600 whitespace-nowrap">{{ salida.usuario?.name ?? '-' }}</td>
+                                <td data-label="Productos" class="px-4 py-3 text-slate-400 max-w-[200px] truncate" :title="listaProductos(salida.detalles)">{{ listaProductos(salida.detalles) }}</td>
+                                <td data-label="Registrado por" class="px-4 py-3 text-slate-600 whitespace-nowrap">{{ salida.usuario?.name ?? '-' }}</td>
                             </tr>
                         </tbody>
                     </table>

@@ -4,6 +4,7 @@ import { Head, Link, router } from '@inertiajs/vue3'
 
 import AppLayout from '@/Layouts/AppLayout.vue'
 import Table from '@/Components/UI/Table.vue'
+import Pagination from '@/Components/UI/Pagination.vue'
 import Badge from '@/Components/UI/Badge.vue'
 import Button from '@/Components/UI/Button.vue'
 
@@ -91,7 +92,7 @@ const toggleActivo = (id, activo) => {
 
             <div>
 
-                <h1 class="text-3xl font-bold text-slate-800">
+                <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">
                     Usuarios
                 </h1>
 
@@ -144,7 +145,7 @@ const toggleActivo = (id, activo) => {
 
                 <!-- Nombre -->
 
-                <td class="p-4 font-medium text-slate-800">
+                <td data-label="Nombre" class="p-4 font-medium text-slate-800">
                     <div>{{ usuario.name }}</div>
                     <div
                         v-if="usuario.employee"
@@ -157,28 +158,28 @@ const toggleActivo = (id, activo) => {
 
                 <!-- CI -->
 
-                <td class="p-4 text-slate-600">
+                <td data-label="CI" class="p-4 text-slate-600">
                     {{ usuario.employee?.identity_card || '-' }}
                 </td>
 
 
                 <!-- Teléfono -->
 
-                <td class="p-4 text-slate-600">
+                <td data-label="Teléfono" class="p-4 text-slate-600">
                     {{ usuario.employee?.phone || '-' }}
                 </td>
 
 
                 <!-- Correo -->
 
-                <td class="p-4 text-slate-600">
+                <td data-label="Correo" class="p-4 text-slate-600">
                     {{ usuario.email }}
                 </td>
 
 
                 <!-- Rol -->
 
-                <td class="p-4">
+                <td data-label="Rol" class="p-4">
 
                     <Badge :color="colorRol(usuario.roles.length ? usuario.roles[0].name : '')">
 
@@ -195,7 +196,7 @@ const toggleActivo = (id, activo) => {
 
                 <!-- Estado -->
 
-                <td class="p-4">
+                <td data-label="Estado" class="p-4">
 
                     <Badge :color="usuario.is_active ? 'green' : 'red'">
                         {{ usuario.is_active ? 'Activo' : 'Inactivo' }}
@@ -206,7 +207,7 @@ const toggleActivo = (id, activo) => {
 
                 <!-- Acciones -->
 
-                <td class="p-4">
+                <td class="p-4 table-actions">
 
                     <div class="flex gap-2">
 
@@ -242,7 +243,7 @@ const toggleActivo = (id, activo) => {
 
             <!-- Sin resultados -->
 
-            <tr v-if="usuarios.data.length === 0">
+            <tr v-if="usuarios.data.length === 0" class="table-empty">
 
                 <td
                     :colspan="headers.length"
@@ -256,40 +257,7 @@ const toggleActivo = (id, activo) => {
         </Table>
 
 
-        <!-- Paginación -->
-
-        <div
-            v-if="usuarios.links && usuarios.links.length > 3"
-            class="flex justify-center gap-1 mt-6"
-        >
-
-            <template
-                v-for="link in usuarios.links"
-                :key="link.label"
-            >
-
-                <Link
-                    v-if="link.url"
-                    :href="link.url"
-                    v-html="link.label"
-                    preserve-scroll
-                    preserve-state
-                    class="px-3 py-2 rounded-lg border text-sm transition"
-                    :class="link.active
-                        ? 'bg-emerald-600 text-white border-emerald-600'
-                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
-                />
-
-                <span
-                    v-else
-                    v-html="link.label"
-                    class="px-3 py-2 rounded-lg border border-slate-200
-                           text-sm text-slate-300 bg-slate-50"
-                />
-
-            </template>
-
-        </div>
+        <Pagination :links="usuarios.links" />
 
     </AppLayout>
 

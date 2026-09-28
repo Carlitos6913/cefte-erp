@@ -5,6 +5,7 @@ import { ref, watch } from 'vue'
 
 import AppLayout from '@/Layouts/AppLayout.vue'
 import Table from '@/Components/UI/Table.vue'
+import Pagination from '@/Components/UI/Pagination.vue'
 import Button from '@/Components/UI/Button.vue'
 
 
@@ -54,7 +55,7 @@ const headers = [
 
         <div class="mb-6">
 
-            <h1 class="text-3xl font-bold text-slate-800">
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">
                 Control de pagos
             </h1>
 
@@ -71,7 +72,7 @@ const headers = [
                 v-model="buscar"
                 type="text"
                 placeholder="Buscar por nro. venta o cliente..."
-                class="w-80 rounded-lg border-slate-300
+                class="w-full sm:w-80 rounded-lg border-slate-300
                        focus:border-emerald-500
                        focus:ring-emerald-500"
             />
@@ -87,29 +88,29 @@ const headers = [
                 class="border-b border-slate-200 hover:bg-slate-50 transition"
             >
 
-                <td class="p-4 font-medium text-slate-700">
+                <td data-label="Nro. Venta" class="p-4 font-medium text-slate-700">
                     {{ venta.numero }}
                 </td>
 
-                <td class="p-4 text-slate-600">
+                <td data-label="Fecha" class="p-4 text-slate-600">
                     {{ formatoFecha(venta.fecha) }}
                 </td>
 
-                <td class="p-4 text-slate-600">
+                <td data-label="Cliente" class="p-4 text-slate-600">
                     {{ venta.clienteRelacion?.nombre ?? venta.cliente ?? 'Sin cliente' }}
                 </td>
 
-                <td class="p-4 font-semibold text-slate-700">
+                <td data-label="Total" class="p-4 font-semibold text-slate-700">
                     Bs. {{ formatoMoneda(venta.total) }}
                 </td>
 
-                <td class="p-4">
+                <td data-label="Saldo pendiente" class="p-4">
                     <span class="font-bold text-red-600">
                         Bs. {{ formatoMoneda(venta.saldo_pendiente) }}
                     </span>
                 </td>
 
-                <td class="p-4">
+                <td class="p-4 table-actions">
                     <div class="flex gap-2">
 
                         <Link
@@ -133,7 +134,7 @@ const headers = [
 
             </tr>
 
-            <tr v-if="ventasConDeuda.data.length === 0">
+            <tr v-if="ventasConDeuda.data.length === 0" class="table-empty">
                 <td
                     :colspan="headers.length"
                     class="p-8 text-center text-slate-500"
@@ -145,33 +146,7 @@ const headers = [
         </Table>
 
 
-        <div
-            v-if="ventasConDeuda.links && ventasConDeuda.links.length > 3"
-            class="flex justify-center gap-1 mt-6"
-        >
-            <template
-                v-for="link in ventasConDeuda.links"
-                :key="link.label"
-            >
-                <Link
-                    v-if="link.url"
-                    :href="link.url"
-                    v-html="link.label"
-                    preserve-scroll
-                    preserve-state
-                    class="px-3 py-2 rounded-lg border text-sm transition"
-                    :class="link.active
-                        ? 'bg-emerald-600 text-white border-emerald-600'
-                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
-                />
-                <span
-                    v-else
-                    v-html="link.label"
-                    class="px-3 py-2 rounded-lg border border-slate-200
-                           text-sm text-slate-300 bg-slate-50"
-                />
-            </template>
-        </div>
+        <Pagination :links="ventasConDeuda.links" />
 
     </AppLayout>
 

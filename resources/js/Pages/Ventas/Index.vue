@@ -4,6 +4,7 @@ import { Head, Link, router } from '@inertiajs/vue3'
 
 import AppLayout from '@/Layouts/AppLayout.vue'
 import Table from '@/Components/UI/Table.vue'
+import Pagination from '@/Components/UI/Pagination.vue'
 import Button from '@/Components/UI/Button.vue'
 import Badge from '@/Components/UI/Badge.vue'
 
@@ -57,10 +58,10 @@ const anular = (id) => {
 
     <AppLayout>
 
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
 
             <div>
-                <h1 class="text-3xl font-bold text-slate-800">
+                <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">
                     Ventas
                 </h1>
                 <p class="text-sm text-slate-500 mt-1">
@@ -85,37 +86,37 @@ const anular = (id) => {
                 class="border-b border-slate-200 hover:bg-slate-50 transition"
             >
 
-                <td class="p-4">
+                <td data-label="Nro. Venta" class="p-4">
                     <div class="font-medium text-slate-700">
                         {{ venta.numero }}
                     </div>
                 </td>
 
-                <td class="p-4 text-slate-600">
+                <td data-label="Fecha" class="p-4 text-slate-600">
                     {{ formatoFecha(venta.fecha) }}
                 </td>
 
-                <td class="p-4 text-slate-600">
+                <td data-label="Cliente" class="p-4 text-slate-600">
                     {{ venta.clienteRelacion?.nombre ?? venta.cliente ?? 'Sin cliente' }}
                 </td>
 
-                <td class="p-4 text-slate-600">
+                <td data-label="Productos" class="p-4 text-slate-600">
                     {{ venta.detalles_count }}
                 </td>
 
-                <td class="p-4">
+                <td data-label="Total" class="p-4">
                     <span class="font-semibold text-slate-700">
                         Bs. {{ formatoMoneda(venta.total) }}
                     </span>
                 </td>
 
-                <td class="p-4">
+                <td data-label="Pago" class="p-4">
                     <Badge :color="venta.pago_tipo === 'credito' ? 'yellow' : 'green'">
                         {{ venta.pago_tipo === 'credito' ? 'Crédito' : 'Contado' }}
                     </Badge>
                 </td>
 
-                <td class="p-4">
+                <td data-label="Saldo" class="p-4">
                     <span
                         v-if="venta.pago_tipo === 'credito'"
                         class="font-semibold"
@@ -126,7 +127,7 @@ const anular = (id) => {
                     <span v-else class="text-slate-400">-</span>
                 </td>
 
-                <td class="p-4">
+                <td data-label="Estado" class="p-4">
                     <Badge
                         :color="venta.estado === 'activo' ? 'green' : 'red'"
                     >
@@ -134,7 +135,7 @@ const anular = (id) => {
                     </Badge>
                 </td>
 
-                <td class="p-4">
+                <td class="p-4 table-actions">
                     <div class="flex gap-2">
 
                         <Link :href="route('ventas.show', venta.id)">
@@ -165,7 +166,7 @@ const anular = (id) => {
 
             </tr>
 
-            <tr v-if="ventas.data.length === 0">
+            <tr v-if="ventas.data.length === 0" class="table-empty">
                 <td
                     :colspan="headers.length"
                     class="p-8 text-center text-slate-500"
@@ -177,32 +178,7 @@ const anular = (id) => {
         </Table>
 
 
-        <div
-            v-if="ventas.links && ventas.links.length > 3"
-            class="flex justify-center gap-1 mt-6"
-        >
-            <template
-                v-for="link in ventas.links"
-                :key="link.label"
-            >
-                <Link
-                    v-if="link.url"
-                    :href="link.url"
-                    v-html="link.label"
-                    preserve-scroll
-                    class="px-3 py-2 rounded-lg border text-sm transition"
-                    :class="link.active
-                        ? 'bg-emerald-600 text-white border-emerald-600'
-                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
-                />
-                <span
-                    v-else
-                    v-html="link.label"
-                    class="px-3 py-2 rounded-lg border border-slate-200
-                           text-sm text-slate-300 bg-slate-50"
-                />
-            </template>
-        </div>
+        <Pagination :links="ventas.links" />
 
     </AppLayout>
 

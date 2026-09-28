@@ -4,6 +4,7 @@ import { Head, Link, router } from '@inertiajs/vue3'
 
 import AppLayout from '@/Layouts/AppLayout.vue'
 import Table from '@/Components/UI/Table.vue'
+import Pagination from '@/Components/UI/Pagination.vue'
 import Button from '@/Components/UI/Button.vue'
 import Badge from '@/Components/UI/Badge.vue'
 
@@ -69,11 +70,11 @@ const anular = (id) => {
 
         <!-- Encabezado -->
 
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
 
             <div>
 
-                <h1 class="text-3xl font-bold text-slate-800">
+                <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">
                     Ingresos
                 </h1>
 
@@ -107,7 +108,7 @@ const anular = (id) => {
 
                 <!-- Producto -->
 
-                <td class="p-4">
+                <td data-label="Producto" class="p-4">
                     <div
                         v-for="detalle in ingreso.detalles"
                         :key="detalle.id"
@@ -124,7 +125,7 @@ const anular = (id) => {
 
                 <!-- Fecha -->
 
-                <td class="p-4 text-slate-600">
+                <td data-label="Fecha" class="p-4 text-slate-600">
 
                     {{ formatoFecha(ingreso.fecha) }}
 
@@ -133,7 +134,7 @@ const anular = (id) => {
 
                 <!-- Proveedor -->
 
-                <td class="p-4 text-slate-600">
+                <td data-label="Proveedor" class="p-4 text-slate-600">
 
                     {{ ingreso.proveedor || 'Sin proveedor' }}
 
@@ -142,7 +143,7 @@ const anular = (id) => {
 
                 <!-- Detalles -->
 
-                <td class="p-4 text-slate-600">
+                <td data-label="Cant. Ingresado" class="p-4 text-slate-600">
 
                     {{ ingreso.detalles_count }}
 
@@ -151,7 +152,7 @@ const anular = (id) => {
 
                 <!-- Total -->
 
-                <td class="p-4">
+                <td data-label="Total" class="p-4">
 
                     <span class="font-semibold text-slate-700">
                         Bs. {{ formatoMoneda(ingreso.total) }}
@@ -162,13 +163,13 @@ const anular = (id) => {
 
                 <!-- Usuario -->
 
-                <td class="p-4 text-slate-600">
+                <td data-label="Registrado por" class="p-4 text-slate-600">
 
                     {{ ingreso.usuario?.name || '-' }}
 
                 </td>
 
-                <td class="p-4">
+                <td data-label="Estado" class="p-4">
 
                     <Badge
                         :color="ingreso.estado === 'activo'
@@ -186,7 +187,7 @@ const anular = (id) => {
 
                 <!-- Acciones -->
 
-                <td class="p-4">
+                <td class="p-4 table-actions">
     <div class="flex gap-2">
 
         <!-- Ver -->
@@ -227,7 +228,7 @@ const anular = (id) => {
 
             <!-- Sin resultados -->
 
-            <tr v-if="ingresos.data.length === 0">
+            <tr v-if="ingresos.data.length === 0" class="table-empty">
 
                 <td
                     :colspan="headers.length"
@@ -241,39 +242,7 @@ const anular = (id) => {
         </Table>
 
 
-        <!-- Paginación -->
-
-        <div
-            v-if="ingresos.links && ingresos.links.length > 3"
-            class="flex justify-center gap-1 mt-6"
-        >
-
-            <template
-                v-for="link in ingresos.links"
-                :key="link.label"
-            >
-
-                <Link
-                    v-if="link.url"
-                    :href="link.url"
-                    v-html="link.label"
-                    preserve-scroll
-                    class="px-3 py-2 rounded-lg border text-sm transition"
-                    :class="link.active
-                        ? 'bg-emerald-600 text-white border-emerald-600'
-                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
-                />
-
-                <span
-                    v-else
-                    v-html="link.label"
-                    class="px-3 py-2 rounded-lg border border-slate-200
-                           text-sm text-slate-300 bg-slate-50"
-                />
-
-            </template>
-
-        </div>
+        <Pagination :links="ingresos.links" />
 
     </AppLayout>
 

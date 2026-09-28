@@ -1,11 +1,13 @@
 <script setup>
 import { Link, router, usePage } from '@inertiajs/vue3'
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useSidebar } from '@/stores/useSidebar'
 
 const page = usePage()
 
-const { collapsed } = useSidebar()
+const { collapsed, mobileOpen, closeMobile } = useSidebar()
+
+watch(() => page.component, () => closeMobile())
 
 const usuario = page.props.auth.user
 
@@ -32,6 +34,7 @@ const esRuta = (component) => rutaActual.value === component
 const nombreModulo = (modulo) => modulo.charAt(0).toUpperCase() + modulo.slice(1)
 
 const cerrarSesion = () => {
+    closeMobile()
     router.post(route('logout'))
 }
 
@@ -145,15 +148,28 @@ const secciones = [
 <template>
 
     <aside
-        class="h-screen bg-gradient-to-b from-slate-900 to-slate-950 text-white flex flex-col shrink-0 overflow-y-auto overflow-x-hidden sidebar-scroll transition-all duration-200"
-        :class="collapsed ? 'w-16' : 'w-64'"
+        class="fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-slate-900 to-slate-950 text-white flex flex-col overflow-y-auto overflow-x-hidden sidebar-scroll transition-transform duration-200 lg:static lg:h-screen lg:shrink-0 lg:transition-all"
+        :class="[
+            collapsed ? 'lg:w-16' : 'lg:w-64',
+            mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+        ]"
     >
 
         <!-- Logo -->
         <div
-            class="h-20 flex items-center border-b border-white/10 shrink-0"
+            class="h-20 flex items-center border-b border-white/10 shrink-0 relative"
             :class="collapsed ? 'justify-center px-0' : 'px-6'"
         >
+            <button
+                type="button"
+                @click="closeMobile"
+                aria-label="Cerrar menú"
+                class="lg:hidden absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition"
+            >
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
             <div
                 class="flex items-center"
                 :class="collapsed ? 'justify-center' : 'gap-3'"

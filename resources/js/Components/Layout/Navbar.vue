@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
 import { useSidebar } from '@/stores/useSidebar'
 
-const { collapsed, toggle } = useSidebar()
+const { collapsed, toggle, toggleMobile } = useSidebar()
 
 const page = usePage()
 
@@ -61,14 +61,26 @@ const usuario = computed(() => page.props.auth.user)
 <template>
     <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 lg:px-8 shrink-0">
 
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 min-w-0">
 
-            <!-- Ocultar / expandir menú -->
+            <!-- Menú móvil (hamburguesa) -->
+            <button
+                type="button"
+                @click="toggleMobile"
+                title="Abrir menú"
+                class="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition shrink-0"
+            >
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                </svg>
+            </button>
+
+            <!-- Ocultar / expandir menú (escritorio) -->
             <button
                 type="button"
                 @click="toggle"
                 :title="collapsed ? 'Expandir menú' : 'Ocultar menú'"
-                class="flex items-center justify-center w-9 h-9 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition"
+                class="hidden lg:flex items-center justify-center w-9 h-9 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition"
             >
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path
@@ -84,11 +96,11 @@ const usuario = computed(() => page.props.auth.user)
                 </svg>
             </button>
 
-            <div>
-                <h1 class="text-lg font-bold text-slate-800">
+            <div class="min-w-0">
+                <h1 class="text-base sm:text-lg font-bold text-slate-800 truncate">
                     {{ rutaActual.titulo }}
                 </h1>
-                <p class="text-xs text-slate-400">
+                <p class="text-xs text-slate-400 truncate">
                     {{ rutaActual.subtitulo }}
                 </p>
             </div>

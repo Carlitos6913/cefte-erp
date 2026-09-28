@@ -49,11 +49,11 @@ const metodoLabel = (metodo) => {
 
         <div class="max-w-5xl mx-auto">
 
-            <div class="flex justify-between items-start mb-6">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
 
                 <div>
 
-                    <div class="flex items-center gap-3">
+                    <div class="flex flex-wrap items-center gap-3">
 
                         <Link
                             :href="route('pagos.index')"
@@ -62,7 +62,7 @@ const metodoLabel = (metodo) => {
                             ←
                         </Link>
 
-                        <h1 class="text-3xl font-bold text-slate-800">
+                        <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">
                             Pagos - {{ venta.numero }}
                         </h1>
 
@@ -144,7 +144,7 @@ const metodoLabel = (metodo) => {
                 </div>
 
 
-                <table class="w-full">
+                <table class="w-full table-responsive">
 
                     <thead class="bg-slate-50">
 
@@ -183,29 +183,29 @@ const metodoLabel = (metodo) => {
                             class="border-t border-slate-200"
                         >
 
-                            <td class="p-4 text-slate-600">
+                            <td data-label="Fecha" class="p-4 text-slate-600">
                                 {{ formatoFecha(pago.fecha) }}
                             </td>
 
-                            <td class="p-4 font-semibold text-emerald-600">
+                            <td data-label="Monto" class="p-4 font-semibold text-emerald-600">
                                 Bs. {{ formatoMoneda(pago.monto) }}
                             </td>
 
-                            <td class="p-4 text-slate-600">
+                            <td data-label="Método" class="p-4 text-slate-600">
                                 {{ metodoLabel(pago.metodo) }}
                             </td>
 
-                            <td class="p-4 text-slate-600">
+                            <td data-label="Registrado por" class="p-4 text-slate-600">
                                 {{ pago.usuario?.name ?? '-' }}
                             </td>
 
-                            <td class="p-4 text-slate-500 text-sm">
+                            <td data-label="Observaciones" class="p-4 text-slate-500 text-sm">
                                 {{ pago.observaciones || '-' }}
                             </td>
 
                         </tr>
 
-                        <tr v-if="venta.pagos.length === 0">
+                        <tr v-if="venta.pagos.length === 0" class="table-empty">
 
                             <td
                                 colspan="5"

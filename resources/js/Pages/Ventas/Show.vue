@@ -40,7 +40,7 @@ const totalPagado = () => {
 
         <div class="max-w-6xl mx-auto">
 
-            <div class="flex justify-between items-start mb-6">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
 
                 <div>
                     <div class="flex items-center gap-3">
@@ -50,7 +50,7 @@ const totalPagado = () => {
                         >
                             ←
                         </Link>
-                        <h1 class="text-3xl font-bold text-slate-800">
+                        <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">
                             {{ venta.numero }}
                         </h1>
                     </div>
@@ -159,7 +159,7 @@ const totalPagado = () => {
 
                 <div class="overflow-x-auto">
 
-                    <table class="w-full">
+                    <table class="w-full table-responsive">
 
                         <thead class="bg-slate-50">
 
@@ -193,27 +193,27 @@ const totalPagado = () => {
                                 :key="detalle.id"
                                 class="border-t border-slate-200"
                             >
-                                <td class="p-4 font-medium text-slate-700">
+                                <td data-label="Código" class="p-4 font-medium text-slate-700">
                                     {{ detalle.product_variant?.sku }}
                                 </td>
-                                <td class="p-4 text-slate-700">
+                                <td data-label="Producto" class="p-4 text-slate-700">
                                     {{ detalle.product_variant?.product?.name }}
                                 </td>
-                                <td class="p-4 text-slate-500">
+                                <td data-label="Unidad" class="p-4 text-slate-500">
                                     {{ detalle.product_variant?.unit_measure?.name }}
                                 </td>
-                                <td class="p-4 text-right font-semibold">
+                                <td data-label="Cantidad" class="p-4 text-right font-semibold">
                                     {{ detalle.cantidad }}
                                 </td>
-                                <td class="p-4 text-right">
+                                <td data-label="Precio unitario" class="p-4 text-right">
                                     Bs. {{ formatoMoneda(detalle.precio_unitario) }}
                                 </td>
-                                <td class="p-4 text-right font-semibold text-slate-800">
+                                <td data-label="Subtotal" class="p-4 text-right font-semibold text-slate-800">
                                     Bs. {{ formatoMoneda(detalle.subtotal) }}
                                 </td>
                             </tr>
 
-                            <tr v-if="venta.detalles.length === 0">
+                            <tr v-if="venta.detalles.length === 0" class="table-empty">
                                 <td colspan="6" class="p-8 text-center text-slate-500">
                                     Esta venta no tiene productos registrados.
                                 </td>
@@ -254,7 +254,7 @@ const totalPagado = () => {
                     </h2>
                 </div>
 
-                <table class="w-full">
+                <table class="w-full table-responsive">
 
                     <thead class="bg-slate-50">
 
@@ -282,16 +282,16 @@ const totalPagado = () => {
                             :key="pago.id"
                             class="border-t border-slate-200"
                         >
-                            <td class="p-4 text-slate-600">
+                            <td data-label="Fecha" class="p-4 text-slate-600">
                                 {{ formatoFecha(pago.fecha) }}
                             </td>
-                            <td class="p-4 font-semibold text-emerald-600">
+                            <td data-label="Monto" class="p-4 font-semibold text-emerald-600">
                                 Bs. {{ formatoMoneda(pago.monto) }}
                             </td>
-                            <td class="p-4 text-slate-600">
+                            <td data-label="Método" class="p-4 text-slate-600">
                                 {{ pago.metodo }}
                             </td>
-                            <td class="p-4 text-slate-600">
+                            <td data-label="Registrado por" class="p-4 text-slate-600">
                                 {{ pago.usuario?.name ?? '-' }}
                             </td>
                         </tr>

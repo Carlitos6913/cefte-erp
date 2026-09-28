@@ -8,7 +8,7 @@ defineProps({
 
 <div class="bg-white rounded-xl shadow overflow-x-auto">
 
-    <table class="w-full">
+    <table class="w-full table-responsive">
 
         <thead class="bg-gray-50 border-b">
 

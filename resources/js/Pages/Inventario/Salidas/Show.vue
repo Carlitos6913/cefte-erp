@@ -29,11 +29,11 @@ const motivoColor = (motivo) => {
 
     <AppLayout>
         <div class="max-w-6xl mx-auto">
-            <div class="flex justify-between items-start mb-6">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
                 <div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex flex-wrap items-center gap-3">
                         <Link :href="route('salidas.index')" class="text-slate-500 hover:text-slate-700">←</Link>
-                        <h1 class="text-3xl font-bold text-slate-800">{{ salida.numero }}</h1>
+                        <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">{{ salida.numero }}</h1>
                         <Badge :color="salida.estado === 'activo' ? 'green' : 'red'">
                             {{ salida.estado === 'activo' ? 'Activa' : 'Anulada' }}
                         </Badge>
@@ -81,7 +81,7 @@ const motivoColor = (motivo) => {
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="w-full">
+                    <table class="w-full table-responsive">
                         <thead class="bg-slate-50">
                             <tr>
                                 <th class="p-4 text-left text-sm font-semibold text-slate-600">Código</th>
@@ -94,10 +94,10 @@ const motivoColor = (motivo) => {
                         </thead>
                         <tbody>
                             <tr v-for="detalle in salida.detalles" :key="detalle.id" class="border-t border-slate-200">
-                                <td class="p-4 font-medium text-slate-700">{{ detalle.product_variant?.sku }}</td>
-                                <td class="p-4 text-slate-700">{{ detalle.product_variant?.product?.name }}</td>
-                                <td class="p-4 text-slate-500">{{ detalle.product_variant?.unit_measure?.name }}</td>
-                                <td class="p-4 text-right font-semibold text-red-600">
+                                <td data-label="Código" class="p-4 font-medium text-slate-700">{{ detalle.product_variant?.sku }}</td>
+                                <td data-label="Producto" class="p-4 text-slate-700">{{ detalle.product_variant?.product?.name }}</td>
+                                <td data-label="Unidad" class="p-4 text-slate-500">{{ detalle.product_variant?.unit_measure?.name }}</td>
+                                <td data-label="Cantidad" class="p-4 text-right font-semibold text-red-600">
                                     -{{ detalle.cantidad }}
                                     <span
                                         v-if="detalle.cantidad_vendida > 0"
@@ -106,10 +106,10 @@ const motivoColor = (motivo) => {
                                         {{ detalle.cantidad_vendida }} vendido
                                     </span>
                                 </td>
-                                <td class="p-4 text-right">Bs. {{ formatoMoneda(detalle.precio_unitario) }}</td>
-                                <td class="p-4 text-right font-semibold text-slate-800">Bs. {{ formatoMoneda(detalle.subtotal) }}</td>
+                                <td data-label="P. Unitario" class="p-4 text-right">Bs. {{ formatoMoneda(detalle.precio_unitario) }}</td>
+                                <td data-label="Subtotal" class="p-4 text-right font-semibold text-slate-800">Bs. {{ formatoMoneda(detalle.subtotal) }}</td>
                             </tr>
-                            <tr v-if="salida.detalles.length === 0">
+                            <tr v-if="salida.detalles.length === 0" class="table-empty">
                                 <td colspan="6" class="p-8 text-center text-slate-500">Esta salida no tiene productos registrados.</td>
                             </tr>
                         </tbody>

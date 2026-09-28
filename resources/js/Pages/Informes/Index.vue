@@ -1,10 +1,11 @@
 <script setup>
 
-import { Head, Link, router } from '@inertiajs/vue3'
+import { Head, router } from '@inertiajs/vue3'
 import { reactive } from 'vue'
 
 import AppLayout from '@/Layouts/AppLayout.vue'
 import Table from '@/Components/UI/Table.vue'
+import Pagination from '@/Components/UI/Pagination.vue'
 import Button from '@/Components/UI/Button.vue'
 import Badge from '@/Components/UI/Badge.vue'
 
@@ -76,7 +77,7 @@ const headersGerente = [
 
         <!-- Encabezado -->
         <div class="mb-6">
-            <h1 class="text-3xl font-bold text-slate-800">
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">
                 Informes
             </h1>
             <p class="text-sm text-slate-500 mt-1">
@@ -132,27 +133,27 @@ const headersGerente = [
         <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm mb-6">
             <div class="flex flex-wrap items-end gap-4">
 
-                <div>
+                <div class="w-full sm:w-auto">
                     <label class="block text-sm font-medium text-slate-600 mb-1">
                         Fecha inicio
                     </label>
                     <input
                         v-model="form.fecha_inicio"
                         type="date"
-                        class="border border-slate-300 rounded-lg px-3 py-2 text-sm
+                        class="w-full sm:w-auto border border-slate-300 rounded-lg px-3 py-2 text-sm
                                focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500
                                outline-none transition"
                     />
                 </div>
 
-                <div>
+                <div class="w-full sm:w-auto">
                     <label class="block text-sm font-medium text-slate-600 mb-1">
                         Fecha fin
                     </label>
                     <input
                         v-model="form.fecha_fin"
                         type="date"
-                        class="border border-slate-300 rounded-lg px-3 py-2 text-sm
+                        class="w-full sm:w-auto border border-slate-300 rounded-lg px-3 py-2 text-sm
                                focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500
                                outline-none transition"
                     />
@@ -180,24 +181,24 @@ const headersGerente = [
             >
 
                 <!-- Número -->
-                <td class="p-4">
+                <td data-label="Nro. Ingreso" class="p-4">
                     <div class="font-medium text-slate-700">
                         {{ mov.numero }}
                     </div>
                 </td>
 
                 <!-- Fecha -->
-                <td class="p-4 text-slate-600">
+                <td data-label="Fecha" class="p-4 text-slate-600">
                     {{ formatoFecha(mov.fecha) }}
                 </td>
 
                 <!-- Proveedor -->
-                <td class="p-4 text-slate-600">
+                <td data-label="Proveedor" class="p-4 text-slate-600">
                     {{ mov.proveedor || 'Sin proveedor' }}
                 </td>
 
                 <!-- Productos (detalles) -->
-                <td class="p-4">
+                <td data-label="Productos" class="p-4">
                     <div class="text-sm text-slate-600">
                         {{ mov.detalles_count }} producto(s)
                     </div>
@@ -217,14 +218,14 @@ const headersGerente = [
                 </td>
 
                 <!-- Total -->
-                <td class="p-4">
+                <td data-label="Total" class="p-4">
                     <span class="font-semibold text-slate-700">
                         Bs. {{ formatoMoneda(mov.total) }}
                     </span>
                 </td>
 
                 <!-- Estado -->
-                <td class="p-4">
+                <td data-label="Estado" class="p-4">
                     <Badge
                         :color="mov.estado === 'activo' ? 'green' : 'red'"
                     >
@@ -235,6 +236,7 @@ const headersGerente = [
                 <!-- Registrado por (solo administrador) -->
                 <td
                     v-if="esAdministrador"
+                    data-label="Registrado por"
                     class="p-4 text-slate-600"
                 >
                     {{ mov.usuario?.name || '-' }}
@@ -243,7 +245,7 @@ const headersGerente = [
             </tr>
 
             <!-- Sin resultados -->
-            <tr v-if="movimientos.data.length === 0">
+            <tr v-if="movimientos.data.length === 0" class="table-empty">
                 <td
                     :colspan="esAdministrador ? 7 : 6"
                     class="p-8 text-center text-slate-500"
@@ -255,33 +257,7 @@ const headersGerente = [
         </Table>
 
 
-        <!-- Paginación -->
-        <div
-            v-if="movimientos.links && movimientos.links.length > 3"
-            class="flex justify-center gap-1 mt-6"
-        >
-            <template
-                v-for="link in movimientos.links"
-                :key="link.label"
-            >
-                <Link
-                    v-if="link.url"
-                    :href="link.url"
-                    v-html="link.label"
-                    preserve-scroll
-                    class="px-3 py-2 rounded-lg border text-sm transition"
-                    :class="link.active
-                        ? 'bg-emerald-600 text-white border-emerald-600'
-                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
-                />
-                <span
-                    v-else
-                    v-html="link.label"
-                    class="px-3 py-2 rounded-lg border border-slate-200
-                           text-sm text-slate-300 bg-slate-50"
-                />
-            </template>
-        </div>
+        <Pagination :links="movimientos.links" />
 
     </AppLayout>
 

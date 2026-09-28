@@ -5,6 +5,7 @@ import { ref, watch } from 'vue'
 
 import AppLayout from '@/Layouts/AppLayout.vue'
 import Table from '@/Components/UI/Table.vue'
+import Pagination from '@/Components/UI/Pagination.vue'
 import Badge from '@/Components/UI/Badge.vue'
 import Button from '@/Components/UI/Button.vue'
 
@@ -64,10 +65,10 @@ const toggleActivo = (id, activo) => {
 
     <AppLayout>
 
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
 
             <div>
-                <h1 class="text-3xl font-bold text-slate-800">
+                <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">
                     Clientes
                 </h1>
                 <p class="text-sm text-slate-500 mt-1">
@@ -75,13 +76,13 @@ const toggleActivo = (id, activo) => {
                 </p>
             </div>
 
-            <div class="flex items-center gap-3">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
 
                 <input
                     v-model="buscar"
                     type="text"
                     placeholder="Buscar cliente..."
-                    class="w-64 rounded-lg border-slate-300
+                    class="w-full sm:w-64 rounded-lg border-slate-300
                            focus:border-emerald-500
                            focus:ring-emerald-500"
                 />
@@ -106,29 +107,29 @@ const toggleActivo = (id, activo) => {
                 :class="{ 'opacity-40': !cliente.activo }"
             >
 
-                <td class="p-4 font-medium text-slate-800">
+                <td data-label="Nombre" class="p-4 font-medium text-slate-800">
                     {{ cliente.nombre }}
                 </td>
 
-                <td class="p-4 text-slate-600">
+                <td data-label="CI / NIT" class="p-4 text-slate-600">
                     {{ cliente.ci_nit || '-' }}
                 </td>
 
-                <td class="p-4 text-slate-600">
+                <td data-label="Teléfono" class="p-4 text-slate-600">
                     {{ cliente.telefono || '-' }}
                 </td>
 
-                <td class="p-4 text-slate-600">
+                <td data-label="Email" class="p-4 text-slate-600">
                     {{ cliente.email || '-' }}
                 </td>
 
-                <td class="p-4">
+                <td data-label="Estado" class="p-4">
                     <Badge :color="cliente.activo ? 'green' : 'red'">
                         {{ cliente.activo ? 'Activo' : 'Inactivo' }}
                     </Badge>
                 </td>
 
-                <td class="p-4">
+                <td class="p-4 table-actions">
                     <div class="flex gap-2">
 
                         <Link
@@ -152,7 +153,7 @@ const toggleActivo = (id, activo) => {
 
             </tr>
 
-            <tr v-if="clientes.data.length === 0">
+            <tr v-if="clientes.data.length === 0" class="table-empty">
                 <td
                     :colspan="headers.length"
                     class="p-8 text-center text-slate-500"
@@ -164,33 +165,7 @@ const toggleActivo = (id, activo) => {
         </Table>
 
 
-        <div
-            v-if="clientes.links && clientes.links.length > 3"
-            class="flex justify-center gap-1 mt-6"
-        >
-            <template
-                v-for="link in clientes.links"
-                :key="link.label"
-            >
-                <Link
-                    v-if="link.url"
-                    :href="link.url"
-                    v-html="link.label"
-                    preserve-scroll
-                    preserve-state
-                    class="px-3 py-2 rounded-lg border text-sm transition"
-                    :class="link.active
-                        ? 'bg-emerald-600 text-white border-emerald-600'
-                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
-                />
-                <span
-                    v-else
-                    v-html="link.label"
-                    class="px-3 py-2 rounded-lg border border-slate-200
-                           text-sm text-slate-300 bg-slate-50"
-                />
-            </template>
-        </div>
+        <Pagination :links="clientes.links" />
 
     </AppLayout>
 

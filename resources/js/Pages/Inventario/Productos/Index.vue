@@ -4,6 +4,7 @@ import { Head, Link, router } from '@inertiajs/vue3'
 
 import AppLayout from '@/Layouts/AppLayout.vue'
 import Table from '@/Components/UI/Table.vue'
+import Pagination from '@/Components/UI/Pagination.vue'
 import Badge from '@/Components/UI/Badge.vue'
 import Button from '@/Components/UI/Button.vue'
 
@@ -76,11 +77,11 @@ const toggleActivo = (id, activo) => {
 
         <!-- Encabezado -->
 
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
 
             <div>
 
-                <h1 class="text-3xl font-bold text-slate-800">
+                <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">
                     Productos
                 </h1>
 
@@ -91,7 +92,7 @@ const toggleActivo = (id, activo) => {
             </div>
 
 
-            <div class="flex items-center gap-3">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
 
                 <!-- Buscador -->
 
@@ -99,7 +100,7 @@ const toggleActivo = (id, activo) => {
                     v-model="buscar"
                     type="text"
                     placeholder="Buscar producto..."
-                    class="w-64 rounded-lg border-slate-300
+                    class="w-full sm:w-64 rounded-lg border-slate-300
                            focus:border-emerald-500
                            focus:ring-emerald-500"
                 />
@@ -133,14 +134,14 @@ const toggleActivo = (id, activo) => {
 
                 <!-- Código -->
 
-                <td class="p-4 font-medium text-slate-700">
+                <td data-label="Código" class="p-4 font-medium text-slate-700">
                     {{ producto.code }}
                 </td>
 
 
                 <!-- Producto -->
 
-                <td class="p-4">
+                <td data-label="Producto" class="p-4">
 
                     <div class="font-medium text-slate-800">
                         {{ producto.name }}
@@ -156,7 +157,7 @@ const toggleActivo = (id, activo) => {
                 </td>
 
 
-                <td class="p-4">
+                <td data-label="Categoría" class="p-4">
                     <span
                         v-if="producto.category"
                         class="px-3 py-1 rounded-full text-xs font-medium
@@ -176,14 +177,14 @@ const toggleActivo = (id, activo) => {
 
                 <!-- Variantes -->
 
-                <td class="p-4 text-slate-700">
+                <td data-label="Variantes" class="p-4 text-slate-700">
                     {{ producto.product_variants_count }}
                 </td>
 
 
                 <!-- Estado -->
 
-                <td class="p-4">
+                <td data-label="Estado" class="p-4">
 
                     <Badge :color="producto.is_active ? 'green' : 'red'">
                         {{ producto.is_active ? 'Activo' : 'Inactivo' }}
@@ -194,7 +195,7 @@ const toggleActivo = (id, activo) => {
 
                 <!-- Acciones -->
 
-                <td class="p-4">
+                <td class="p-4 table-actions">
 
                     <div class="flex gap-2">
 
@@ -226,7 +227,7 @@ const toggleActivo = (id, activo) => {
 
             <!-- Sin resultados -->
 
-            <tr v-if="productos.data.length === 0">
+            <tr v-if="productos.data.length === 0" class="table-empty">
 
                 <td
                     :colspan="headers.length"
@@ -240,40 +241,7 @@ const toggleActivo = (id, activo) => {
         </Table>
 
 
-        <!-- Paginación -->
-
-        <div
-            v-if="productos.links && productos.links.length > 3"
-            class="flex justify-center gap-1 mt-6"
-        >
-
-            <template
-                v-for="link in productos.links"
-                :key="link.label"
-            >
-
-                <Link
-                    v-if="link.url"
-                    :href="link.url"
-                    v-html="link.label"
-                    preserve-scroll
-                    preserve-state
-                    class="px-3 py-2 rounded-lg border text-sm transition"
-                    :class="link.active
-                        ? 'bg-emerald-600 text-white border-emerald-600'
-                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
-                />
-
-                <span
-                    v-else
-                    v-html="link.label"
-                    class="px-3 py-2 rounded-lg border border-slate-200
-                           text-sm text-slate-300 bg-slate-50"
-                />
-
-            </template>
-
-        </div>
+        <Pagination :links="productos.links" />
 
     </AppLayout>
 

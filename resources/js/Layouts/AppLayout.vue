@@ -3,13 +3,31 @@ import { usePage } from '@inertiajs/vue3'
 import { computed } from 'vue'
 import Sidebar from '@/Components/Layout/Sidebar.vue'
 import Navbar from '@/Components/Layout/Navbar.vue'
+import { useSidebar } from '@/stores/useSidebar'
 
 const page = usePage()
 const flash = computed(() => page.props.flash ?? {})
+
+const { mobileOpen, closeMobile } = useSidebar()
 </script>
 
 <template>
     <div class="h-screen bg-slate-50 flex overflow-hidden">
+
+        <Transition
+            enter-active-class="transition-opacity ease-out duration-200"
+            enter-from-class="opacity-0"
+            enter-to-class="opacity-100"
+            leave-active-class="transition-opacity ease-in duration-150"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
+        >
+            <div
+                v-if="mobileOpen"
+                class="fixed inset-0 z-40 bg-slate-900/60 lg:hidden"
+                @click="closeMobile"
+            />
+        </Transition>
 
         <Sidebar />
 

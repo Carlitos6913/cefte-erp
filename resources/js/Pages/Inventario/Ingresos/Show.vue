@@ -40,7 +40,7 @@ const formatoMoneda = (valor) => {
 
             <!-- Encabezado -->
 
-            <div class="flex justify-between items-start mb-6">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
 
                 <div>
 
@@ -53,7 +53,7 @@ const formatoMoneda = (valor) => {
                             ←
                         </Link>
 
-                        <h1 class="text-3xl font-bold text-slate-800">
+                        <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">
                             {{ ingreso.numero }}
                         </h1>
 
@@ -168,7 +168,7 @@ const formatoMoneda = (valor) => {
 
                 <div class="overflow-x-auto">
 
-                    <table class="w-full">
+                    <table class="w-full table-responsive">
 
                         <thead class="bg-slate-50">
 
@@ -211,39 +211,39 @@ const formatoMoneda = (valor) => {
                                 class="border-t border-slate-200"
                             >
 
-                                <td class="p-4 font-medium text-slate-700">
+                                <td data-label="Código" class="p-4 font-medium text-slate-700">
                                     {{ detalle.product_variant?.sku }}
                                 </td>
 
 
-                                <td class="p-4 text-slate-700">
+                                <td data-label="Producto" class="p-4 text-slate-700">
                                     {{ detalle.product_variant?.product?.name }}
                                 </td>
 
 
-                                <td class="p-4 text-slate-500">
+                                <td data-label="Unidad" class="p-4 text-slate-500">
                                     {{ detalle.product_variant?.unit_measure?.name }}
                                 </td>
 
 
-                                <td class="p-4 text-right font-semibold">
+                                <td data-label="Cantidad" class="p-4 text-right font-semibold">
                                     {{ detalle.cantidad }}
                                 </td>
 
 
-                                <td class="p-4 text-right">
+                                <td data-label="Precio unitario" class="p-4 text-right">
                                     Bs. {{ formatoMoneda(detalle.precio_unitario) }}
                                 </td>
 
 
-                                <td class="p-4 text-right font-semibold text-slate-800">
+                                <td data-label="Subtotal" class="p-4 text-right font-semibold text-slate-800">
                                     Bs. {{ formatoMoneda(detalle.subtotal) }}
                                 </td>
 
                             </tr>
 
 
-                            <tr v-if="ingreso.detalles.length === 0">
+                            <tr v-if="ingreso.detalles.length === 0" class="table-empty">
 
                                 <td
                                     colspan="6"

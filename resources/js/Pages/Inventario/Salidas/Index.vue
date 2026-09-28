@@ -2,6 +2,7 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import Table from '@/Components/UI/Table.vue'
+import Pagination from '@/Components/UI/Pagination.vue'
 import Button from '@/Components/UI/Button.vue'
 import Badge from '@/Components/UI/Badge.vue'
 
@@ -36,9 +37,9 @@ const anular = (id) => {
     <Head title="Salidas" />
 
     <AppLayout>
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
             <div>
-                <h1 class="text-3xl font-bold text-slate-800">Salidas</h1>
+                <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">Salidas</h1>
                 <p class="text-sm text-slate-500 mt-1">Registro y control de salidas de productos del almacén</p>
             </div>
             <Link :href="route('salidas.create')">
@@ -48,27 +49,27 @@ const anular = (id) => {
 
         <Table :headers="headers">
             <tr v-for="salida in salidas.data" :key="salida.id" class="border-b border-slate-200 hover:bg-slate-50 transition">
-                <td class="p-4">
+                <td data-label="Producto" class="p-4">
                     <div v-for="detalle in salida.detalles" :key="detalle.id" class="font-medium text-slate-700">
                         {{ detalle.product_variant?.product?.name ?? detalle.product_variant?.sku ?? 'Producto no disponible' }}
                     </div>
                     <div class="text-xs text-slate-400 mt-1">{{ salida.numero }}</div>
                 </td>
-                <td class="p-4 text-slate-600">{{ formatoFecha(salida.fecha) }}</td>
-                <td class="p-4">
+                <td data-label="Fecha" class="p-4 text-slate-600">{{ formatoFecha(salida.fecha) }}</td>
+                <td data-label="Motivo" class="p-4">
                     <Badge :color="motivoColor(salida.motivo)">{{ motivoLabel(salida.motivo) }}</Badge>
                 </td>
-                <td class="p-4 text-slate-600">{{ salida.detalles_count }}</td>
-                <td class="p-4">
+                <td data-label="Cant." class="p-4 text-slate-600">{{ salida.detalles_count }}</td>
+                <td data-label="Total" class="p-4">
                     <span class="font-semibold text-slate-700">Bs. {{ formatoMoneda(salida.total) }}</span>
                 </td>
-                <td class="p-4 text-slate-600">{{ salida.usuario?.name || '-' }}</td>
-                <td class="p-4">
+                <td data-label="Registrado por" class="p-4 text-slate-600">{{ salida.usuario?.name || '-' }}</td>
+                <td data-label="Estado" class="p-4">
                     <Badge :color="salida.estado === 'activo' ? 'green' : 'red'">
                         {{ salida.estado === 'activo' ? 'Activa' : 'Anulada' }}
                     </Badge>
                 </td>
-                <td class="p-4">
+                <td class="p-4 table-actions">
                     <div class="flex gap-2">
                         <Link :href="route('salidas.show', salida.id)">
                             <Button color="secondary">Ver</Button>
@@ -80,20 +81,13 @@ const anular = (id) => {
                     </div>
                 </td>
             </tr>
-            <tr v-if="salidas.data.length === 0">
+            <tr v-if="salidas.data.length === 0" class="table-empty">
                 <td :colspan="headers.length" class="p-8 text-center text-slate-500">
                     No existen salidas registradas.
                 </td>
             </tr>
         </Table>
 
-        <div v-if="salidas.links && salidas.links.length > 3" class="flex justify-center gap-1 mt-6">
-            <template v-for="link in salidas.links" :key="link.label">
-                <Link v-if="link.url" :href="link.url" v-html="link.label" preserve-scroll
-                    class="px-3 py-2 rounded-lg border text-sm transition"
-                    :class="link.active ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'" />
-                <span v-else v-html="link.label" class="px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-300 bg-slate-50" />
-            </template>
-        </div>
+        <Pagination :links="salidas.links" />
     </AppLayout>
 </template>
