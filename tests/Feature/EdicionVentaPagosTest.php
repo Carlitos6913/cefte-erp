@@ -32,7 +32,7 @@ class EdicionVentaPagosTest extends TestCase
             'fecha' => '2026-09-26',
             'pago_tipo' => 'credito',
             'detalles' => [
-                ['product_variant_id' => $variante->id, 'cantidad' => $cantidad, 'precio_unitario' => 10],
+                ['product_variant_id' => $variante->id, 'unidad_id' => $variante->unidad_base_id, 'cantidad' => $cantidad, 'precio_unitario' => 10],
             ],
         ])->assertSessionHasNoErrors();
 
@@ -63,7 +63,7 @@ class EdicionVentaPagosTest extends TestCase
             'fecha' => '2026-09-28',
             'pago_tipo' => 'contado',
             'detalles' => [
-                ['product_variant_id' => $venta->detalles()->first()->product_variant_id, 'cantidad' => 5, 'precio_unitario' => 10],
+                ['product_variant_id' => $venta->detalles()->first()->product_variant_id, 'unidad_id' => $venta->detalles()->first()->unidad_id, 'cantidad' => 5, 'precio_unitario' => 10],
             ],
         ]);
 
@@ -80,7 +80,7 @@ class EdicionVentaPagosTest extends TestCase
             'fecha' => '2026-09-28',
             'pago_tipo' => 'credito',
             'detalles' => [
-                ['product_variant_id' => $venta->detalles()->first()->product_variant_id, 'cantidad' => 5, 'precio_unitario' => 12],
+                ['product_variant_id' => $venta->detalles()->first()->product_variant_id, 'unidad_id' => $venta->detalles()->first()->unidad_id, 'cantidad' => 5, 'precio_unitario' => 12],
             ],
         ])->assertSessionHasNoErrors();
 
@@ -96,7 +96,7 @@ class EdicionVentaPagosTest extends TestCase
             'fecha' => '2026-09-28',
             'pago_tipo' => 'credito',
             'detalles' => [
-                ['product_variant_id' => $venta->detalles()->first()->product_variant_id, 'cantidad' => 2, 'precio_unitario' => 10],
+                ['product_variant_id' => $venta->detalles()->first()->product_variant_id, 'unidad_id' => $venta->detalles()->first()->unidad_id, 'cantidad' => 2, 'precio_unitario' => 10],
             ],
         ]);
 

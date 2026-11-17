@@ -52,7 +52,7 @@ const mapaRutas = {
 
 const rutaActual = computed(() => {
     const componente = page.component
-    return mapaRutas[componente] ?? { titulo: 'CEFTE ERP', subtitulo: '' }
+    return mapaRutas[componente] ?? { titulo: 'CEFTE', subtitulo: '' }
 })
 
 const usuario = computed(() => page.props.auth.user)

@@ -26,6 +26,10 @@ class Employee extends Model
         'is_active' => 'boolean',
     ];
 
+    protected $appends = [
+        'full_name',
+    ];
+
     public function user(): HasOne
     {
         return $this->hasOne(User::class);

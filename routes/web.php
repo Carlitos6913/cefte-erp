@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\IngresoController;
 use App\Http\Controllers\Admin\PagoController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductVariantController;
+use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SalidaController;
 use App\Http\Controllers\Admin\UnitMeasureController;
 use App\Http\Controllers\Admin\UserController;
@@ -71,7 +72,24 @@ Route::middleware('auth')->group(function () {
     });
 
     // =====================================================
-    // EMPLEADOS
+    // ROLES
+    // =====================================================
+
+    Route::middleware('modulo:usuarios')->group(function () {
+        Route::get('/roles', [RoleController::class, 'index'])
+            ->middleware('role:Administrador')
+            ->name('roles.index');
+        Route::get('/roles/{role}/edit', [RoleController::class, 'edit'])
+            ->middleware('role:Administrador')
+            ->name('roles.edit');
+        Route::put('/roles/{role}', [RoleController::class, 'update'])
+            ->middleware('role:Administrador')
+            ->name('roles.update');
+        Route::delete('/roles/{role}', [RoleController::class, 'destroy'])
+            ->middleware('role:Administrador')
+            ->name('roles.destroy');
+    });
+
     // =====================================================
 
     Route::middleware('modulo:empleados')->group(function () {
@@ -159,7 +177,7 @@ Route::middleware('auth')->group(function () {
             ->except(['destroy']);
 
         Route::delete('/ingresos/{ingreso}', [IngresoController::class, 'destroy'])
-            ->middleware('role:Administrador,Gerente')
+            ->middleware('role:Administrador')
             ->name('ingresos.destroy');
     });
 
@@ -172,7 +190,7 @@ Route::middleware('auth')->group(function () {
             ->except(['destroy']);
 
         Route::delete('/salidas/{salida}', [SalidaController::class, 'destroy'])
-            ->middleware('role:Administrador,Gerente')
+            ->middleware('role:Administrador')
             ->name('salidas.destroy');
     });
 
@@ -201,7 +219,7 @@ Route::middleware('auth')->group(function () {
             ->except(['destroy']);
 
         Route::delete('/ventas/{venta}', [VentaController::class, 'destroy'])
-            ->middleware('role:Administrador,Gerente')
+            ->middleware('role:Administrador')
             ->name('ventas.destroy');
     });
 
@@ -230,6 +248,9 @@ Route::middleware('auth')->group(function () {
     Route::middleware('modulo:informes')->group(function () {
         Route::get('/informes', [InformesController::class, 'index'])
             ->name('informes.index');
+
+        Route::get('/informes/exportar', [InformesController::class, 'exportar'])
+            ->name('informes.exportar');
     });
 
 });

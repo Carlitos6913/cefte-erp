@@ -1,0 +1,78 @@
+classDiagram
+    direction TB
+
+    class DashboardController {
+        +__invoke() Response
+        -calcularVentasHoy() decimal
+        -calcularCuentasPorCobrar() decimal
+        -contarProductosActivos() int
+        -contarStockBajo() int
+        -listarRecientes() array
+    }
+
+    class InformesController {
+        +index(peticion) Response
+        -resumenIngresos(desde, hasta) object
+        -contarStockBajo() int
+        -listarMovimientos(desde, hasta) LengthAwarePaginator
+    }
+
+    class Venta {
+        +int id
+        +date fecha
+        +decimal total
+        +decimal saldo_pendiente
+        +string pago_tipo
+        +string estado
+    }
+
+    class Ingreso {
+        +int id
+        +string numero
+        +date fecha
+        +decimal total
+        +string estado
+    }
+
+    class Salida {
+        +int id
+        +string numero
+        +date fecha
+        +string motivo
+        +string estado
+    }
+
+    class Variante {
+        +int id
+        +string sku
+        +decimal stock "(derivado: suma de lotes)"
+        +decimal stock_minimo
+        +bool estado
+    }
+
+    class Lote {
+        +int id
+        +string codigo
+        +date fecha_caducidad
+        +decimal stock
+        +bool estado
+    }
+
+    class MovimientoInventario {
+        +int id
+        +int lote_id
+        +decimal entrada
+        +decimal salida
+        +decimal stock_anterior
+        +decimal stock_nuevo
+        +string referencia
+    }
+
+    DashboardController ..> Venta : ventasHoy / cuentasPorCobrar
+    DashboardController ..> Variante : totalProductos / stockBajo
+    DashboardController ..> Ingreso : ingresosRecientes
+    DashboardController ..> Salida : salidasRecientes
+    InformesController ..> Ingreso : resumen y movimientos
+    InformesController ..> Variante : stock bajo minimo
+    InformesController ..> Lote : existencias por lote
+    InformesController ..> MovimientoInventario : kardex

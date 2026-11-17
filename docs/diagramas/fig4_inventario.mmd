@@ -1,0 +1,53 @@
+erDiagram
+    "Variante" ||--o{ "Movimiento de inventario" : "genera"
+    "Lote" |o--o{ "Movimiento de inventario" : "afecta"
+    "Unidad de Medida" |o--o{ "Movimiento de inventario" : "registra en"
+    "Usuario" |o--o{ "Movimiento de inventario" : "autoriza"
+    "Variante" ||--o{ "Lote" : "se controla por"
+
+    "Variante" {
+        entero id PK "Identificador"
+        texto(50) sku UK "Código SKU"
+        texto(100) sabor "?"
+        texto(100) tipo_empaque "?"
+        decimal stock "Existencias (suma de lotes)"
+        decimal stock_minimo "Alerta de reposición"
+    }
+
+    "Lote" {
+        entero id PK "Identificador"
+        entero variante_id FK "→ Variante"
+        texto(50) código "Código de lote"
+        fecha fecha_caducidad "Fecha de vencimiento"
+        decimal cantidad_inicial "Unidades recibidas"
+        decimal stock "Existencias del lote"
+        booleano activo
+    }
+
+    "Movimiento de inventario" {
+        entero id PK "Identificador"
+        entero variante_id FK "→ Variante"
+        entero lote_id FK "? → Lote"
+        entero unidad_id FK "? → Unidad de medida"
+        decimal entrada "Unidades que ingresan"
+        decimal salida "Unidades que salen"
+        decimal stock_anterior "Saldo previo"
+        decimal stock_nuevo "Saldo resultante"
+        texto(20) referencia "Tipo: ING / VTA / SAL"
+        entero referencia_id "Documento de origen"
+        texto(30) número "? Número del documento"
+        entero usuario_id FK "? → Usuario"
+    }
+
+    "Correlativo" {
+        entero id PK "Identificador"
+        texto(20) código UK "Serie, ej.: VTA"
+        entero año UK "Ejercicio"
+        entero último "Último número emitido"
+    }
+
+    "Secuencia" {
+        entero id PK "Identificador"
+        texto(20) código UK "Ej.: PROD"
+        entero último "Último código generado"
+    }

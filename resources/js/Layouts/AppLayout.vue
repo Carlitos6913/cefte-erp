@@ -12,7 +12,7 @@ const { mobileOpen, closeMobile } = useSidebar()
 </script>
 
 <template>
-    <div class="h-screen bg-slate-50 flex overflow-hidden">
+    <div class="h-screen bg-gradient-to-br from-slate-50 via-slate-50 to-emerald-50/40 flex overflow-hidden">
 
         <Transition
             enter-active-class="transition-opacity ease-out duration-200"
@@ -37,6 +37,8 @@ const { mobileOpen, closeMobile } = useSidebar()
 
             <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
 
+                <div class="w-full max-w-[1600px] mx-auto">
+
                 <Transition
                     enter-active-class="transition ease-out duration-200"
                     enter-from-class="opacity-0 translate-y-1"
@@ -48,23 +50,29 @@ const { mobileOpen, closeMobile } = useSidebar()
                     <div>
                         <div
                             v-if="flash.success"
-                            class="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 flex items-center gap-3"
+                            class="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-700 flex items-center gap-3 shadow-sm"
                         >
-                            <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                            {{ flash.success }}
+                            <span class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                            </span>
+                            <span class="text-sm font-medium">{{ flash.success }}</span>
                         </div>
 
                         <div
                             v-if="flash.error"
-                            class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 flex items-center gap-3"
+                            class="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 flex items-center gap-3 shadow-sm"
                         >
-                            <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
-                            {{ flash.error }}
+                            <span class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008z" /></svg>
+                            </span>
+                            <span class="text-sm font-medium">{{ flash.error }}</span>
                         </div>
 
                         <slot />
                     </div>
                 </Transition>
+
+                </div>
 
             </main>
 

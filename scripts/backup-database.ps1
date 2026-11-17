@@ -1,4 +1,4 @@
-# Backup automático de la base de datos CEFTE ERP (MySQL).
+# Backup automático de la base de datos CEFTE (MySQL).
 #
 # Uso manual:
 #   powershell -ExecutionPolicy Bypass -File scripts\backup-database.ps1

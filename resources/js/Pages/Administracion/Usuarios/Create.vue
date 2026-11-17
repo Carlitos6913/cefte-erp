@@ -1,6 +1,5 @@
 <script setup>
 
-import AppLayout from '@/Layouts/AppLayout.vue'
 import Form from './Form.vue'
 
 defineProps({
@@ -13,14 +12,10 @@ defineProps({
 
 <template>
 
-<AppLayout>
-
 <Form
     :roles="roles"
     :modulosDisponibles="modulosDisponibles"
     :empleados="empleados"
 />
-
-</AppLayout>
 
 </template>

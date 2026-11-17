@@ -12,12 +12,15 @@ class VentaDetalle extends Model
         'venta_id',
         'product_variant_id',
         'cantidad',
+        'unidad_id',
+        'cantidad_original',
         'precio_unitario',
         'subtotal',
     ];
 
     protected $casts = [
         'cantidad' => 'integer',
+        'cantidad_original' => 'decimal:2',
         'precio_unitario' => 'decimal:2',
         'subtotal' => 'decimal:2',
     ];
@@ -30,6 +33,14 @@ class VentaDetalle extends Model
     public function productVariant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
+    }
+
+    /**
+     * Unidad en la que el usuario capturó la cantidad.
+     */
+    public function unidad(): BelongsTo
+    {
+        return $this->belongsTo(UnitMeasure::class, 'unidad_id');
     }
 
     public function salidaDetalles(): BelongsToMany

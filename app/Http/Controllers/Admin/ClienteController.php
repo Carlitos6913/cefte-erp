@@ -27,6 +27,12 @@ class ClienteController extends Controller
 
         return Inertia::render('Clientes/Index', [
             'clientes' => $clientes,
+            'resumen' => [
+                'total' => Cliente::count(),
+                'activos' => Cliente::where('activo', true)->count(),
+                'inactivos' => Cliente::where('activo', false)->count(),
+                'conEmail' => Cliente::whereNotNull('email')->where('email', '!=', '')->count(),
+            ],
             'filters' => [
                 'buscar' => $buscar,
             ],

@@ -179,7 +179,7 @@ const secciones = [
                 </div>
                 <div v-if="!collapsed">
                     <div class="text-lg font-bold tracking-tight">CEFTE</div>
-                    <div class="text-[10px] text-emerald-400 font-semibold tracking-[0.2em] uppercase">Sistema ERP</div>
+                    <div class="text-[10px] text-emerald-400 font-semibold tracking-[0.2em] uppercase">Sistema CEFTE</div>
                 </div>
             </div>
         </div>

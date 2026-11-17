@@ -25,7 +25,7 @@ class ModuloMiddleware
         }
 
         // Si el rol no tiene modulos asignados, tiene acceso total
-        // (roles predefinidos: Administrador, Gerente, etc.)
+        // (rol predefinido: Administrador)
         if (empty($rol->modulos)) {
             return $next($request);
         }

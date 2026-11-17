@@ -55,6 +55,11 @@ class EmployeeController extends Controller
 
         return Inertia::render('Empleados/Index', [
             'empleados' => $empleados,
+            'resumen' => [
+                'total' => Employee::count(),
+                'activos' => Employee::where('is_active', true)->count(),
+                'conUsuario' => Employee::whereHas('user')->count(),
+            ],
             'filters' => [
                 'buscar' => $buscar,
             ],
@@ -166,9 +171,8 @@ class EmployeeController extends Controller
                 ->with('error', 'Este empleado ya tiene un usuario asignado.');
         }
 
-        $validated = $request->validate([
+        $reglas = [
             'name' => ['nullable', 'string', 'max:100'],
-            'email' => ['nullable', 'email', 'unique:users,email'],
             'role' => ['required', Rule::in(array_merge(
                 ['__nuevo__'],
                 Role::pluck('name')->toArray()
@@ -176,7 +180,22 @@ class EmployeeController extends Controller
             'nuevo_rol' => ['required_if:role,__nuevo__', 'nullable', 'string', 'max:100', 'unique:roles,name'],
             'modulos' => ['required_if:role,__nuevo__', 'nullable', 'array'],
             'modulos.*' => ['string'],
-        ]);
+        ];
+
+        // El correo de acceso es el registrado en la ficha del empleado
+        // y no se acepta desde el formulario. Solo es editable
+        // mientras el empleado no tenga un correo registrado.
+        $correoDelEmpleado = $empleado->email;
+
+        if (! $correoDelEmpleado) {
+            $reglas['email'] = ['nullable', 'email', 'unique:users,email'];
+        }
+
+        $validated = $request->validate($reglas);
+
+        if ($correoDelEmpleado) {
+            $validated['email'] = $correoDelEmpleado;
+        }
 
         $validated['employee_id'] = $empleado->id;
 

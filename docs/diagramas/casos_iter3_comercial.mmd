@@ -1,0 +1,40 @@
+flowchart LR
+    Almacenero((Almacenero))
+    Vendedor((Vendedor))
+    Gerente((Administrador / Gerente))
+
+    subgraph SISTEMA["Sistema CEFTE - Comercial"]
+        direction TB
+        UC00([Autenticarse])
+        UC01([Registrar salida de almacén])
+        UC02([Anular salida])
+        UC03([Registrar cliente])
+        UC04([Registrar venta al contado])
+        UC05([Registrar venta a crédito])
+        UC06([Registrar pago])
+        UC07([Consultar cuentas por cobrar])
+        UC08([Anular venta])
+    end
+
+    Almacenero --> UC01
+    Almacenero --> UC02
+    Vendedor --> UC03
+    Vendedor --> UC04
+    Vendedor --> UC05
+    Vendedor --> UC06
+    Vendedor --> UC07
+    Gerente --> UC08
+
+    UC01 -. include .-> UC00
+    UC02 -. include .-> UC00
+    UC03 -. include .-> UC00
+    UC04 -. include .-> UC00
+    UC05 -. include .-> UC00
+    UC06 -. include .-> UC00
+    UC07 -. include .-> UC00
+    UC08 -. include .-> UC00
+
+    classDef actor fill:#e8eaf6,stroke:#3949ab,stroke-width:2px
+    classDef caso fill:#fff3e0,stroke:#fb8c00,stroke-width:1px
+    class Almacenero,Vendedor,Gerente actor
+    class UC00,UC01,UC02,UC03,UC04,UC05,UC06,UC07,UC08 caso

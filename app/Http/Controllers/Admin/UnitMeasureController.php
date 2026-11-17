@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ProductVariant;
 use App\Models\UnitMeasure;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -28,6 +29,12 @@ class UnitMeasureController extends Controller
 
         return Inertia::render('Inventario/UnidadesMedida/Index', [
             'unidades' => $unidades,
+            'resumen' => [
+                'total' => UnitMeasure::count(),
+                'enUso' => UnitMeasure::whereHas('productVariants')->count(),
+                'sinUso' => UnitMeasure::doesntHave('productVariants')->count(),
+                'variantes' => ProductVariant::count(),
+            ],
             'filters' => [
                 'buscar' => $buscar,
             ],

@@ -4,6 +4,7 @@ import { Head, Link } from '@inertiajs/vue3'
 
 import AppLayout from '@/Layouts/AppLayout.vue'
 import Button from '@/Components/UI/Button.vue'
+import { presentacionVariante } from '@/utils/producto'
 
 
 const props = defineProps({
@@ -107,11 +108,17 @@ const formatoMoneda = (valor) => {
                     <div>
 
                         <p class="text-sm text-slate-500">
-                            Proveedor
+                            Encargado de la recepción
                         </p>
 
                         <p class="font-semibold text-slate-800 mt-1">
-                            {{ ingreso.proveedor || 'Sin proveedor' }}
+                            {{ ingreso.encargado?.full_name || '-' }}
+                            <span
+                                v-if="ingreso.encargado?.identity_card"
+                                class="text-sm font-normal text-slate-500"
+                            >
+                                ({{ ingreso.encargado.identity_card }})
+                            </span>
                         </p>
 
                     </div>
@@ -175,11 +182,15 @@ const formatoMoneda = (valor) => {
                             <tr>
 
                                 <th class="p-4 text-left text-sm font-semibold text-slate-600">
-                                    Código
+                                    Producto
                                 </th>
 
                                 <th class="p-4 text-left text-sm font-semibold text-slate-600">
-                                    Producto
+                                    Lote
+                                </th>
+
+                                <th class="p-4 text-left text-sm font-semibold text-slate-600">
+                                    Caducidad
                                 </th>
 
                                 <th class="p-4 text-left text-sm font-semibold text-slate-600">
@@ -211,23 +222,50 @@ const formatoMoneda = (valor) => {
                                 class="border-t border-slate-200"
                             >
 
-                                <td data-label="Código" class="p-4 font-medium text-slate-700">
-                                    {{ detalle.product_variant?.sku }}
+                                <td data-label="Producto" class="p-4 text-slate-700">
+                                    <div class="font-medium text-slate-700">
+                                        {{ detalle.product_variant?.product?.name }}
+                                    </div>
+                                    <div
+                                        v-if="presentacionVariante(detalle.product_variant)"
+                                        class="text-xs text-slate-500"
+                                    >
+                                        {{ presentacionVariante(detalle.product_variant) }}
+                                    </div>
+                                    <div class="text-xs text-slate-400">
+                                        {{ detalle.product_variant?.sku }}
+                                    </div>
                                 </td>
 
 
-                                <td data-label="Producto" class="p-4 text-slate-700">
-                                    {{ detalle.product_variant?.product?.name }}
+                                <td data-label="Lote" class="p-4 text-slate-700">
+                                    {{ detalle.lote?.codigo ?? '-' }}
+                                </td>
+
+
+                                <td data-label="Caducidad" class="p-4 text-slate-500">
+                                    {{ formatoFecha(detalle.lote?.fecha_caducidad) }}
                                 </td>
 
 
                                 <td data-label="Unidad" class="p-4 text-slate-500">
-                                    {{ detalle.product_variant?.unit_measure?.name }}
+                                    {{ detalle.unidad?.name
+                                        ?? detalle.product_variant?.unidad_base?.name }}
                                 </td>
 
 
                                 <td data-label="Cantidad" class="p-4 text-right font-semibold">
-                                    {{ detalle.cantidad }}
+                                    {{ detalle.cantidad_original ?? detalle.cantidad }}
+
+                                    <p
+                                        v-if="detalle.unidad?.id
+                                                && detalle.unidad.id
+                                                !== detalle.product_variant?.unidad_base_id"
+                                        class="text-xs font-normal text-slate-500"
+                                    >
+                                        = {{ detalle.cantidad }}
+                                        {{ detalle.product_variant?.unidad_base?.symbol }}
+                                    </p>
                                 </td>
 
 
@@ -246,7 +284,7 @@ const formatoMoneda = (valor) => {
                             <tr v-if="ingreso.detalles.length === 0" class="table-empty">
 
                                 <td
-                                    colspan="6"
+                                    colspan="7"
                                     class="p-8 text-center text-slate-500"
                                 >
                                     Este ingreso no tiene productos registrados.
@@ -262,7 +300,7 @@ const formatoMoneda = (valor) => {
                             <tr class="border-t-2 border-slate-200">
 
                                 <td
-                                    colspan="5"
+                                    colspan="6"
                                     class="p-5 text-right font-semibold text-slate-600"
                                 >
                                     Total

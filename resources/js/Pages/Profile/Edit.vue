@@ -1,14 +1,16 @@
 <script setup>
-import { useForm, usePage } from '@inertiajs/vue3'
+import { Head, router, useForm } from '@inertiajs/vue3'
+import { ref } from 'vue'
+
 import AppLayout from '@/Layouts/AppLayout.vue'
+import Button from '@/Components/UI/Button.vue'
+import FormField from '@/Components/UI/FormField.vue'
 
 const props = defineProps({
     userData: Object,
     mustVerifyEmail: Boolean,
     status: String,
 })
-
-const page = usePage()
 
 const user = props.userData
 const employee = user.employee
@@ -41,6 +43,16 @@ const guardar = () => {
     })
 }
 
+const reenviando = ref(false)
+
+const reenviarVerificacion = () => {
+    router.post(route('verification.send'), {}, {
+        preserveScroll: true,
+        onStart: () => (reenviando.value = true),
+        onFinish: () => (reenviando.value = false),
+    })
+}
+
 const fechaRegistro = user.created_at
     ? new Date(user.created_at).toLocaleDateString('es-BO', { year: 'numeric', month: 'long', day: 'numeric' })
     : '-'
@@ -66,6 +78,8 @@ const fechaVerificacion = user.email_verified_at
 
 <template>
     <AppLayout>
+
+        <Head title="Mi perfil" />
 
         <div class="space-y-6">
 
@@ -179,26 +193,39 @@ const fechaVerificacion = user.email_verified_at
                         <form @submit.prevent="guardar" class="space-y-5">
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Nombre *</label>
+                                <FormField
+                                    label="Nombre"
+                                    forId="profile-name"
+                                    :error="form.errors.name"
+                                    required
+                                >
                                     <input
+                                        id="profile-name"
                                         v-model="form.name"
                                         type="text"
-                                        class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition"
-                                        :class="form.errors.name ? 'border-red-300 bg-red-50/50' : ''"
+                                        class="form-input"
+                                        :class="{ 'is-invalid': form.errors.name }"
+                                        autocomplete="name"
+                                        required
                                     />
-                                    <p v-if="form.errors.name" class="text-xs text-red-500 mt-1">{{ form.errors.name }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Correo electrónico *</label>
+                                </FormField>
+                                <FormField
+                                    label="Correo electrónico"
+                                    forId="profile-email"
+                                    :error="form.errors.email"
+                                    hint="Si lo cambias, deberás verificarlo nuevamente."
+                                    required
+                                >
                                     <input
+                                        id="profile-email"
                                         v-model="form.email"
                                         type="email"
-                                        class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition"
-                                        :class="form.errors.email ? 'border-red-300 bg-red-50/50' : ''"
+                                        class="form-input"
+                                        :class="{ 'is-invalid': form.errors.email }"
+                                        autocomplete="username"
+                                        required
                                     />
-                                    <p v-if="form.errors.email" class="text-xs text-red-500 mt-1">{{ form.errors.email }}</p>
-                                </div>
+                                </FormField>
                             </div>
 
                             <!-- Datos del empleado -->
@@ -206,88 +233,99 @@ const fechaVerificacion = user.email_verified_at
                                 <h4 class="text-sm font-semibold text-slate-600 mb-4">Datos del empleado</h4>
 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Nombre</label>
+                                    <FormField label="Nombre" forId="profile-first-name" optional>
                                         <input
+                                            id="profile-first-name"
                                             v-model="form.employee.first_name"
                                             type="text"
-                                            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition"
+                                            class="form-input"
                                         />
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Apellido paterno</label>
+                                    </FormField>
+                                    <FormField label="Apellido paterno" forId="profile-first-surname" optional>
                                         <input
+                                            id="profile-first-surname"
                                             v-model="form.employee.first_surname"
                                             type="text"
-                                            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition"
+                                            class="form-input"
                                         />
-                                    </div>
+                                    </FormField>
                                 </div>
 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Apellido materno</label>
+                                    <FormField label="Apellido materno" forId="profile-second-surname" optional>
                                         <input
+                                            id="profile-second-surname"
                                             v-model="form.employee.second_surname"
                                             type="text"
-                                            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition"
+                                            class="form-input"
                                         />
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Cédula de identidad</label>
+                                    </FormField>
+                                    <FormField label="Cédula de identidad" forId="profile-identity-card" optional>
                                         <input
+                                            id="profile-identity-card"
                                             v-model="form.employee.identity_card"
                                             type="text"
-                                            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition"
+                                            class="form-input"
                                         />
-                                    </div>
+                                    </FormField>
                                 </div>
 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Teléfono</label>
+                                    <FormField label="Teléfono" forId="profile-phone" optional>
                                         <input
+                                            id="profile-phone"
                                             v-model="form.employee.phone"
                                             type="text"
-                                            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition"
+                                            class="form-input"
                                         />
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Profesión</label>
+                                    </FormField>
+                                    <FormField label="Profesión" forId="profile-profession" optional>
                                         <input
+                                            id="profile-profession"
                                             v-model="form.employee.profession"
                                             type="text"
-                                            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition"
+                                            class="form-input"
                                         />
-                                    </div>
+                                    </FormField>
                                 </div>
 
                                 <div class="mt-4">
-                                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Dirección</label>
-                                    <input
-                                        v-model="form.employee.address"
-                                        type="text"
-                                        class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition"
-                                    />
+                                    <FormField label="Dirección" forId="profile-address" optional>
+                                        <input
+                                            id="profile-address"
+                                            v-model="form.employee.address"
+                                            type="text"
+                                            class="form-input"
+                                        />
+                                    </FormField>
                                 </div>
                             </div>
 
-                            <div v-if="mustVerifyEmail && !fechaVerificacion" class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700 flex items-center gap-2">
-                                <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                                </svg>
-                                <span>Tu correo no está verificado.</span>
-                                <button type="button" class="underline font-semibold hover:text-amber-800 ml-auto">Reenviar</button>
+                            <div v-if="mustVerifyEmail && !fechaVerificacion" class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                                    </svg>
+                                    <span>Tu correo no está verificado.</span>
+                                    <button
+                                        type="button"
+                                        class="underline font-semibold hover:text-amber-800 ml-auto disabled:opacity-50"
+                                        :disabled="reenviando"
+                                        @click="reenviarVerificacion"
+                                    >
+                                        {{ reenviando ? 'Enviando...' : 'Reenviar' }}
+                                    </button>
+                                </div>
+
+                                <p v-if="status === 'verification-link-sent'" class="mt-2 text-xs font-semibold text-emerald-600">
+                                    Se envió un nuevo enlace de verificación a tu correo.
+                                </p>
                             </div>
 
                             <div class="flex items-center gap-3 pt-3 border-t border-slate-100">
-                                <button
-                                    type="submit"
-                                    :disabled="form.processing"
-                                    class="px-6 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50 transition shadow-sm shadow-emerald-500/20"
-                                >
+                                <Button type="submit" :disabled="form.processing">
                                     {{ form.processing ? 'Guardando...' : 'Guardar cambios' }}
-                                </button>
+                                </Button>
                                 <Transition
                                     enter-active-class="transition ease-out duration-200"
                                     enter-from-class="opacity-0 translate-y-1"

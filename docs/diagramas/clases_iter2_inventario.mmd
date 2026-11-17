@@ -1,0 +1,147 @@
+classDiagram
+    direction TB
+
+    class Categoria {
+        +int id
+        +string codigo
+        +string nombre
+        +string descripcion
+        +productos() HasMany
+    }
+
+    class Producto {
+        +int id
+        +int categoria_id
+        +string codigo
+        +string nombre
+        +string descripcion
+        +bool estado
+        +categoria() BelongsTo
+        +variantes() HasMany
+    }
+
+    class Variante {
+        +int id
+        +int producto_id
+        +int unidad_medida_id
+        +int unidad_base_id
+        +int unidad_empaque_id
+        +decimal factor_empaque
+        +string sku
+        +string sabor
+        +string tipo_empaque
+        +decimal contenido_neto
+        +decimal stock "(derivado: suma de lotes)"
+        +decimal stock_minimo
+        +decimal precio_unitario
+        +bool estado
+        +unidadesCapturables() array
+        +stockEnEmpaque() float
+        +stock() int
+        +producto() BelongsTo
+        +unidadBase() BelongsTo
+        +unidadEmpaque() BelongsTo
+        +lotes() HasMany
+    }
+
+    class Lote {
+        +int id
+        +int producto_variante_id
+        +string codigo
+        +date fecha_caducidad
+        +decimal cantidad_inicial
+        +decimal stock
+        +bool estado
+        +variante() BelongsTo
+        +movimientos() HasMany
+        +scopeDisponibleFefo() Builder
+    }
+
+    class UnidadMedida {
+        +int id
+        +string nombre
+        +string simbolo
+        +variantes() HasMany
+    }
+
+    class Ingreso {
+        +int id
+        +string numero
+        +date fecha
+        +int encargado_id
+        +int usuario_id
+        +decimal total
+        +string estado
+        +string observaciones
+        +detalles() HasMany
+        +encargado() BelongsTo
+        +usuario() BelongsTo
+    }
+
+    class IngresoDetalle {
+        +int id
+        +int ingreso_id
+        +int variante_id
+        +int lote_id
+        +int unidad_id
+        +int cantidad
+        +decimal cantidad_original
+        +decimal precio_unitario
+        +decimal subtotal
+        +ingreso() BelongsTo
+        +variante() BelongsTo
+        +lote() BelongsTo
+    }
+
+    class MovimientoInventario {
+        +int id
+        +int variante_id
+        +int lote_id
+        +int unidad_id
+        +decimal entrada
+        +decimal salida
+        +decimal stock_anterior
+        +decimal stock_nuevo
+        +string referencia
+        +int referencia_id
+        +string numero
+        +int usuario_id
+        +variante() BelongsTo
+        +lote() BelongsTo
+    }
+
+    class InventarioService {
+        +registrarEntrada(varianteId, cantidad, loteId, referencia, referenciaId, numero, usuarioId, unidadId) void
+        +obtenerOCrearLote(varianteId, codigo, fechaCaducidad) Lote
+        +consumirSalidaFefo(varianteId, cantidad, referencia, referenciaId, numero, usuarioId, unidadId) array
+        +revertirEntrada(varianteId, cantidad, loteId, referencia, referenciaId, usuarioId) void
+        +revertirSalida(varianteId, cantidad, loteId, referencia, referenciaId, usuarioId) void
+        +stockDisponible(varianteId) float
+    }
+
+    class CodigoService {
+        +siguienteProducto() string
+        +previsualizarProducto() string
+        +siguienteSku(producto) string
+        +previsualizarSku(producto) string
+    }
+
+    class NumeradorService {
+        +siguiente(codigo, anio) string
+    }
+
+    Categoria "1" --> "0..N" Producto : agrupa
+    Producto "1" --> "1..N" Variante : genera
+    UnidadMedida "1" --> "0..N" Variante : mide
+    Ingreso "1" --> "1..N" IngresoDetalle : contiene
+    IngresoDetalle "N" --> "1" Variante : compra
+    IngresoDetalle "N" --> "0..1" Lote : registra
+    Variante "1" --> "0..N" Lote : se controla por
+    Variante "1" --> "0..N" MovimientoInventario : registra
+    Lote "1" --> "0..N" MovimientoInventario : afecta
+    InventarioService ..> Variante : controla stock
+    InventarioService ..> Lote : consume FEFO
+    InventarioService ..> MovimientoInventario : crea asiento
+    CodigoService ..> Producto : genera codigo
+    CodigoService ..> Variante : genera sku
+    NumeradorService ..> Ingreso : numera

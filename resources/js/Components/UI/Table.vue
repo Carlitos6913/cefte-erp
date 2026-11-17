@@ -6,33 +6,38 @@ defineProps({
 
 <template>
 
-<div class="bg-white rounded-xl shadow overflow-x-auto">
+<div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
 
-    <table class="w-full table-responsive">
+    <div class="overflow-x-auto">
 
-        <thead class="bg-gray-50 border-b">
+        <table class="w-full table-responsive text-sm">
 
-            <tr>
+            <thead class="bg-slate-50 border-b border-slate-200">
 
-                <th
-                    v-for="header in headers"
-                    :key="header"
-                    class="text-left p-4 font-semibold text-gray-700"
-                >
-                    {{ header }}
-                </th>
+                <tr>
 
-            </tr>
+                    <th
+                        v-for="header in headers"
+                        :key="header"
+                        scope="col"
+                        class="text-left px-5 py-3.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap"
+                    >
+                        {{ header }}
+                    </th>
 
-        </thead>
+                </tr>
 
-        <tbody>
+            </thead>
 
-            <slot/>
+            <tbody>
 
-        </tbody>
+                <slot/>
 
-    </table>
+            </tbody>
+
+        </table>
+
+    </div>
 
 </div>
 

@@ -21,8 +21,9 @@ class KardexTest extends TestCase
 
         $this->actingAs($user)->post('/ingresos', [
             'fecha' => '2026-09-25',
+            'encargado_id' => $this->crearEncargado()->id,
             'detalles' => [
-                ['product_variant_id' => $variante->id, 'cantidad' => 10, 'precio_unitario' => 4],
+                ['product_variant_id' => $variante->id, 'lote' => 'L-1', 'fecha_caducidad' => '2027-01-01', 'unidad_id' => $variante->unidad_base_id, 'cantidad' => 10, 'precio_unitario' => 4],
             ],
         ])->assertSessionHasNoErrors();
 
@@ -64,8 +65,9 @@ class KardexTest extends TestCase
 
         $this->actingAs($user)->post('/ingresos', [
             'fecha' => '2026-09-25',
+            'encargado_id' => $this->crearEncargado()->id,
             'detalles' => [
-                ['product_variant_id' => $variante->id, 'cantidad' => 10, 'precio_unitario' => 4],
+                ['product_variant_id' => $variante->id, 'lote' => 'L-1', 'fecha_caducidad' => '2027-01-01', 'unidad_id' => $variante->unidad_base_id, 'cantidad' => 10, 'precio_unitario' => 4],
             ],
         ])->assertSessionHasNoErrors();
 

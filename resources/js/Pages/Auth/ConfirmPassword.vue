@@ -1,55 +1,60 @@
 <script setup>
-import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import GuestLayout from '@/Layouts/GuestLayout.vue'
+import Button from '@/Components/UI/Button.vue'
+import { Head, useForm } from '@inertiajs/vue3'
 
 const form = useForm({
     password: '',
-});
+})
 
 const submit = () => {
     form.post(route('password.confirm'), {
         onFinish: () => form.reset(),
-    });
-};
+    })
+}
 </script>
 
 <template>
     <GuestLayout>
-        <Head title="Confirm Password" />
+        <Head title="Confirmar contraseña" />
 
-        <div class="mb-4 text-sm text-gray-600">
-            This is a secure area of the application. Please confirm your
-            password before continuing.
+        <div class="text-center mb-6">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+                <svg class="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <h1 class="text-xl font-bold text-slate-800">Confirma tu contraseña</h1>
+            <p class="text-sm text-slate-400 mt-1.5">
+                Esta es un área segura. Ingresa tu contraseña para continuar.
+            </p>
         </div>
 
-        <form @submit.prevent="submit">
+        <form @submit.prevent="submit" class="space-y-4">
             <div>
-                <InputLabel for="password" value="Password" />
-                <TextInput
+                <label for="password" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+                    Contraseña
+                </label>
+                <input
                     id="password"
                     type="password"
-                    class="mt-1 block w-full"
                     v-model="form.password"
                     required
-                    autocomplete="current-password"
                     autofocus
+                    autocomplete="current-password"
+                    class="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                    :class="form.errors.password ? 'border-red-300 bg-red-50/50' : 'border-slate-200'"
                 />
-                <InputError class="mt-2" :message="form.errors.password" />
+                <p v-if="form.errors.password" class="text-xs text-red-500 mt-1">{{ form.errors.password }}</p>
             </div>
 
-            <div class="mt-4 flex justify-end">
-                <PrimaryButton
-                    class="ms-4"
-                    :class="{ 'opacity-25': form.processing }"
-                    :disabled="form.processing"
-                >
-                    Confirm
-                </PrimaryButton>
-            </div>
+            <Button
+                type="submit"
+                :disabled="form.processing"
+                class="w-full"
+            >
+                {{ form.processing ? 'Verificando...' : 'Confirmar' }}
+            </Button>
         </form>
     </GuestLayout>
 </template>

@@ -1,0 +1,72 @@
+classDiagram
+    direction TB
+
+    class Empleado {
+        +int id
+        +string nombre
+        +string apellido_paterno
+        +string apellido_materno
+        +string carnet_identidad
+        +string telefono
+        +string direccion
+        +string profesion
+        +string correo
+        +bool estado
+        +getNombreCompleto() string
+        +usuario() HasOne
+    }
+
+    class Usuario {
+        +int id
+        +int empleado_id
+        +string nombre
+        +string correo
+        +datetime correo_verificado_en
+        +string contrasena
+        +bool estado
+        +bool debe_cambiar_contrasena
+        +string token_recordar
+        +empleado() BelongsTo
+    }
+
+    class Rol {
+        +int id
+        +string nombre
+        +string guard
+        +array modulos
+    }
+
+    class Permiso {
+        +int id
+        +string nombre
+        +string guard
+    }
+
+    class UserService {
+        +store(datos) Usuario
+        +update(usuario, datos) Usuario
+        +destroy(usuario) void
+    }
+
+    class ModuloMiddleware {
+        +handle(peticion, siguiente) Response
+    }
+
+    class RoleMiddleware {
+        +handle(peticion, siguiente, rol) Response
+    }
+
+    class MustChangePassword {
+        +handle(peticion, siguiente) Response
+    }
+
+    Empleado "1" --> "0..1" Usuario : tiene cuenta
+    Usuario "N" --> "M" Rol : posee
+    Rol "N" --> "M" Permiso : concede
+    UserService ..> Usuario : crea / actualiza
+    UserService ..> Empleado : vincula
+    UserService ..> Rol : asigna
+    UserService ..> Permiso : concede
+    ModuloMiddleware ..> Rol : verifica modulos
+    RoleMiddleware ..> Rol : verifica rol
+    MustChangePassword ..> Usuario : exige cambio

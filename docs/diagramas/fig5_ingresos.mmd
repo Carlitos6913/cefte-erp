@@ -1,0 +1,70 @@
+erDiagram
+    "Empleado" ||--o{ "Ingreso" : "encabeza"
+    "Usuario" ||--o{ "Ingreso" : "registra"
+    "Ingreso" ||--o{ "Detalle de ingreso" : "contiene"
+    "Variante" ||--o{ "Detalle de ingreso" : "se compra"
+    "Unidad de Medida" |o--o{ "Detalle de ingreso" : "unidad de referencia"
+    "Variante" ||--o{ "Lote" : "se identifica por"
+    "Lote" |o--o{ "Detalle de ingreso" : "se crea en"
+
+    "Ingreso" {
+        entero id PK "Identificador"
+        texto(30) número UK "N.º de documento"
+        fecha fecha "Fecha de recepción"
+        entero encargado_id FK "→ Empleado"
+        entero usuario_id FK "→ Usuario"
+        decimal total "Suma de los detalles"
+        texto(20) estado "activo / anulado"
+        texto observaciones "?"
+    }
+
+    "Detalle de ingreso" {
+        entero id PK "Identificador"
+        entero ingreso_id FK "→ Ingreso"
+        entero variante_id FK "→ Variante"
+        entero lote_id FK "? → Lote (con caducidad)"
+        entero unidad_id FK "? → Unidad de medida"
+        entero cantidad "Unidades recibidas"
+        decimal cantidad_original "? Cantidad en unidad original"
+        decimal precio_unitario "Costo por unidad"
+        decimal subtotal "cantidad × precio"
+    }
+
+    "Lote" {
+        entero id PK "Identificador"
+        entero variante_id FK "→ Variante"
+        texto(50) código "Código de lote"
+        fecha fecha_caducidad "Fecha de vencimiento"
+        decimal cantidad_inicial "Unidades recibidas"
+        decimal stock "Existencias del lote"
+        booleano activo
+    }
+
+    "Empleado" {
+        entero id PK "Identificador"
+        texto(20) carnet_identidad UK "CI"
+        texto nombre "Primer nombre"
+        texto apellido_paterno
+        texto apellido_materno "?"
+        booleano activo
+    }
+
+    "Usuario" {
+        entero id PK "Identificador"
+        texto nombre "Nombre de acceso"
+        texto correo UK
+        booleano activo
+    }
+
+    "Variante" {
+        entero id PK "Identificador"
+        texto(50) sku UK "Código SKU"
+        texto(100) sabor "?"
+        decimal stock "Existencias (suma de lotes)"
+    }
+
+    "Unidad de Medida" {
+        entero id PK "Identificador"
+        texto(50) nombre "Ej.: Caja"
+        texto(10) símbolo "Ej.: CJA"
+    }

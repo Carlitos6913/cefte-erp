@@ -1,15 +1,24 @@
 <script setup>
 
 import { Head, Link, useForm } from '@inertiajs/vue3'
+import { computed } from 'vue'
 
 import AppLayout from '@/Layouts/AppLayout.vue'
 import Button from '@/Components/UI/Button.vue'
+import PageHeader from '@/Components/UI/PageHeader.vue'
+import FormLayout from '@/Components/UI/FormLayout.vue'
+import FormSection from '@/Components/UI/FormSection.vue'
+import FormField from '@/Components/UI/FormField.vue'
+import FormActions from '@/Components/UI/FormActions.vue'
+import FormHelp from '@/Components/UI/FormHelp.vue'
 
 
 const props = defineProps({
     variante: Object,
     productos: Array,
     unidades: Array,
+    unidadesBase: Array,
+    unidadesEmpaque: Array,
 })
 
 
@@ -17,13 +26,62 @@ const form = useForm({
 
     product_id: props.variante.product_id,
     unit_measure_id: props.variante.unit_measure_id,
-    sku: props.variante.sku,
+    unidad_base_id: props.variante.unidad_base_id ?? '',
+    unidad_empaque_id: props.variante.unidad_empaque_id ?? '',
+    factor_empaque: props.variante.factor_empaque ?? '',
     flavor: props.variante.flavor ?? '',
     packaging_type: props.variante.packaging_type ?? '',
     net_content: props.variante.net_content ?? '',
-    stock: props.variante.stock,
     minimum_stock: props.variante.minimum_stock,
     unit_price: props.variante.unit_price,
+
+})
+
+
+/**
+ * Si la variante declara empaque, la caja solo aparece cuando el
+ * factor indica cuántas unidades base trae.
+ */
+const usaEmpaque = computed(() => {
+
+    return form.unidad_empaque_id !== ''
+        && form.unidad_empaque_id !== null
+        && Number(form.factor_empaque) > 0
+
+})
+
+
+const unidadesBaseDisponibles = computed(() => {
+    return props.unidadesBase?.length
+        ? props.unidadesBase
+        : props.unidades
+})
+
+
+const productoSeleccionado = computed(() => {
+    return props.productos.find((p) => p.id === form.product_id)
+})
+
+
+const unidadBaseSeleccionada = computed(() => {
+    return unidadesBaseDisponibles.value.find((u) => u.id == form.unidad_base_id)
+})
+
+
+const unidadEmpaqueSeleccionada = computed(() => {
+    return (props.unidadesEmpaque ?? []).find((u) => u.id == form.unidad_empaque_id)
+})
+
+
+const hintFactor = computed(() => {
+
+    if (usaEmpaque.value) {
+        const empaque = unidadEmpaqueSeleccionada.value?.name ?? 'empaque'
+
+        return `1 ${empaque} = ${Number(form.factor_empaque)} unidades. El ingreso y la venta podrán capturarse por caja o por unidad.`
+    }
+
+    return 'Déjalo vacío si el producto se maneja solo por unidades.'
 
 })
 
@@ -48,344 +106,404 @@ const actualizar = () => {
 
     <AppLayout>
 
-        <div class="max-w-4xl mx-auto">
+        <div class="max-w-6xl mx-auto">
 
-            <div class="mb-6">
-
-                <div class="flex items-center gap-3">
-
-                    <Link
-                        :href="route('variantes.index')"
-                        class="text-slate-500 hover:text-slate-700"
-                    >
-                        ←
+            <PageHeader title="Editar variante" subtitle="Modifica la información de la variante.">
+                <template #actions>
+                    <Link :href="route('variantes.index')">
+                        <Button color="secondary">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                            </svg>
+                            Volver al listado
+                        </Button>
                     </Link>
+                </template>
+            </PageHeader>
 
-                    <h1 class="text-3xl font-bold text-slate-800">
-                        Editar variante
-                    </h1>
+            <form @submit.prevent="actualizar" class="space-y-5">
 
-                </div>
+                <FormLayout aside>
 
-                <p class="text-sm text-slate-500 mt-1">
-                    Modifica la información de la variante.
-                </p>
+                    <FormSection
+                        title="Producto y presentación"
+                        description="Selecciona el producto y define su presentación comercial."
+                        tone="emerald"
+                    >
+                        <template #icon>
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-8.25-4.5-8.25 4.5m16.5 0v9l-8.25 4.5m8.25-13.5l-8.25 4.5m0 9l-8.25-4.5v-9m8.25 13.5v-9M3.75 7.5l8.25 4.5" />
+                            </svg>
+                        </template>
 
-            </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-
-            <form
-                @submit.prevent="actualizar"
-                class="bg-white rounded-xl border border-slate-200 shadow-sm"
-            >
-
-                <div class="p-6 space-y-6">
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                        <!-- Producto -->
-
-                        <div class="md:col-span-2">
-
-                            <label class="block text-sm font-medium text-slate-700 mb-1">
-                                Producto
-                            </label>
-
-                            <select
-                                v-model="form.product_id"
-                                class="w-full rounded-lg border-slate-300
-                                       focus:border-emerald-500
-                                       focus:ring-emerald-500"
-                            >
-                                <option value="">
-                                    Seleccionar producto
-                                </option>
-
-                                <option
-                                    v-for="producto in productos"
-                                    :key="producto.id"
-                                    :value="producto.id"
+                            <div class="md:col-span-2">
+                                <FormField
+                                    label="Producto"
+                                    for-id="product_id"
+                                    :error="form.errors.product_id"
+                                    required
                                 >
-                                    {{ producto.code }} - {{ producto.name }}
-                                </option>
-                            </select>
+                                    <select
+                                        id="product_id"
+                                        v-model="form.product_id"
+                                        class="form-select"
+                                        :class="{ 'is-invalid': form.errors.product_id }"
+                                    >
+                                        <option value="">
+                                            Seleccionar producto
+                                        </option>
+                                        <option
+                                            v-for="producto in productos"
+                                            :key="producto.id"
+                                            :value="producto.id"
+                                        >
+                                            {{ producto.code }} - {{ producto.name }}
+                                        </option>
+                                    </select>
+                                </FormField>
+                            </div>
 
-                            <p
-                                v-if="form.errors.product_id"
-                                class="text-sm text-red-600 mt-1"
+                            <FormField
+                                label="SKU"
+                                for-id="sku_variante"
+                                hint="El SKU no puede modificarse."
                             >
-                                {{ form.errors.product_id }}
-                            </p>
+                                <input
+                                    id="sku_variante"
+                                    :value="variante.sku"
+                                    type="text"
+                                    disabled
+                                    readonly
+                                    class="form-input font-mono"
+                                />
+                            </FormField>
 
-                        </div>
-
-
-                        <!-- SKU -->
-
-                        <div>
-
-                            <label class="block text-sm font-medium text-slate-700 mb-1">
-                                SKU
-                            </label>
-
-                            <input
-                                v-model="form.sku"
-                                type="text"
-                                maxlength="50"
-                                class="w-full rounded-lg border-slate-300
-                                       focus:border-emerald-500
-                                       focus:ring-emerald-500"
-                            />
-
-                            <p
-                                v-if="form.errors.sku"
-                                class="text-sm text-red-600 mt-1"
+                            <FormField
+                                label="Unidad de medida"
+                                for-id="unit_measure_id"
+                                :error="form.errors.unit_measure_id"
+                                required
                             >
-                                {{ form.errors.sku }}
-                            </p>
-
-                        </div>
-
-
-                        <!-- Unidad de medida -->
-
-                        <div>
-
-                            <label class="block text-sm font-medium text-slate-700 mb-1">
-                                Unidad de medida
-                            </label>
-
-                            <select
-                                v-model="form.unit_measure_id"
-                                class="w-full rounded-lg border-slate-300
-                                       focus:border-emerald-500
-                                       focus:ring-emerald-500"
-                            >
-                                <option value="">
-                                    Seleccionar unidad
-                                </option>
-
-                                <option
-                                    v-for="unidad in unidades"
-                                    :key="unidad.id"
-                                    :value="unidad.id"
+                                <select
+                                    id="unit_measure_id"
+                                    v-model="form.unit_measure_id"
+                                    class="form-select"
+                                    :class="{ 'is-invalid': form.errors.unit_measure_id }"
                                 >
-                                    {{ unidad.name }} ({{ unidad.symbol }})
-                                </option>
-                            </select>
+                                    <option value="">
+                                        Seleccionar unidad
+                                    </option>
+                                    <option
+                                        v-for="unidad in unidades"
+                                        :key="unidad.id"
+                                        :value="unidad.id"
+                                    >
+                                        {{ unidad.name }} ({{ unidad.symbol }})
+                                    </option>
+                                </select>
+                            </FormField>
 
-                            <p
-                                v-if="form.errors.unit_measure_id"
-                                class="text-sm text-red-600 mt-1"
+                            <FormField
+                                label="Sabor"
+                                for-id="flavor"
+                                :error="form.errors.flavor"
+                                optional
                             >
-                                {{ form.errors.unit_measure_id }}
-                            </p>
+                                <input
+                                    id="flavor"
+                                    v-model="form.flavor"
+                                    type="text"
+                                    maxlength="100"
+                                    class="form-input"
+                                    :class="{ 'is-invalid': form.errors.flavor }"
+                                />
+                            </FormField>
+
+                            <FormField
+                                label="Tipo de empaque"
+                                for-id="packaging_type"
+                                :error="form.errors.packaging_type"
+                                optional
+                            >
+                                <input
+                                    id="packaging_type"
+                                    v-model="form.packaging_type"
+                                    type="text"
+                                    maxlength="100"
+                                    class="form-input"
+                                    :class="{ 'is-invalid': form.errors.packaging_type }"
+                                />
+                            </FormField>
+
+                            <div class="md:col-span-2">
+                                <FormField
+                                    label="Contenido neto"
+                                    for-id="net_content"
+                                    :error="form.errors.net_content"
+                                    optional
+                                >
+                                    <input
+                                        id="net_content"
+                                        v-model="form.net_content"
+                                        type="number"
+                                        min="0"
+                                        step="1"
+                                        class="form-input text-right"
+                                        :class="{ 'is-invalid': form.errors.net_content }"
+                                    />
+                                </FormField>
+                            </div>
 
                         </div>
+                    </FormSection>
 
+                    <FormSection
+                        title="Unidades y empaque"
+                        description="Define cómo se controla el stock y el empaque de almacén."
+                        tone="blue"
+                    >
+                        <template #icon>
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.429 9.75L2.25 12l4.179 2.25m11.142-4.5L21.75 12l-4.179 2.25M6.429 9.75L12 6l5.571 3.75M6.429 9.75v4.5L12 18l5.571-3.75v-4.5M12 18v3.75" />
+                            </svg>
+                        </template>
 
-                        <!-- Sabor -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                        <div>
-
-                            <label class="block text-sm font-medium text-slate-700 mb-1">
-                                Sabor
-                            </label>
-
-                            <input
-                                v-model="form.flavor"
-                                type="text"
-                                maxlength="100"
-                                class="w-full rounded-lg border-slate-300
-                                       focus:border-emerald-500
-                                       focus:ring-emerald-500"
-                            />
-
-                            <p
-                                v-if="form.errors.flavor"
-                                class="text-sm text-red-600 mt-1"
+                            <FormField
+                                label="Unidad de stock"
+                                for-id="unidad_base_id"
+                                :error="form.errors.unidad_base_id"
+                                hint="Unidad en la que se controla y se vende el stock (una botella, una lata, una bolsa)."
+                                required
                             >
-                                {{ form.errors.flavor }}
-                            </p>
+                                <select
+                                    id="unidad_base_id"
+                                    v-model="form.unidad_base_id"
+                                    class="form-select"
+                                    :class="{ 'is-invalid': form.errors.unidad_base_id }"
+                                >
+                                    <option value="">
+                                        Seleccionar unidad
+                                    </option>
+                                    <option
+                                        v-for="unidad in unidadesBaseDisponibles"
+                                        :key="unidad.id"
+                                        :value="unidad.id"
+                                    >
+                                        {{ unidad.name }} ({{ unidad.symbol }})
+                                    </option>
+                                </select>
+                            </FormField>
+
+                            <FormField
+                                label="Empaque de almacén"
+                                for-id="unidad_empaque_id"
+                                :error="form.errors.unidad_empaque_id"
+                                optional
+                            >
+                                <select
+                                    id="unidad_empaque_id"
+                                    v-model="form.unidad_empaque_id"
+                                    class="form-select"
+                                    :class="{ 'is-invalid': form.errors.unidad_empaque_id }"
+                                >
+                                    <option value="">
+                                        Sin empaque
+                                    </option>
+                                    <option
+                                        v-for="unidad in unidadesEmpaque"
+                                        :key="unidad.id"
+                                        :value="unidad.id"
+                                    >
+                                        {{ unidad.name }} ({{ unidad.symbol }})
+                                    </option>
+                                </select>
+                            </FormField>
+
+                            <div class="md:col-span-2">
+                                <FormField
+                                    label="Unidades por empaque"
+                                    for-id="factor_empaque"
+                                    :error="form.errors.factor_empaque"
+                                    :hint="hintFactor"
+                                    :required="Boolean(form.unidad_empaque_id)"
+                                    :optional="! form.unidad_empaque_id"
+                                >
+                                    <input
+                                        id="factor_empaque"
+                                        v-model.number="form.factor_empaque"
+                                        type="number"
+                                        min="1"
+                                        step="1"
+                                        placeholder="Ej: 24"
+                                        :disabled="!form.unidad_empaque_id"
+                                        class="form-input text-right"
+                                        :class="{ 'is-invalid': form.errors.factor_empaque }"
+                                    />
+                                </FormField>
+                            </div>
 
                         </div>
+                    </FormSection>
 
+                    <FormSection
+                        title="Precios y stock"
+                        description="Define el precio de venta y el stock mínimo para alertas."
+                        tone="amber"
+                    >
+                        <template #icon>
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z" />
+                            </svg>
+                        </template>
 
-                        <!-- Tipo de empaque -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                        <div>
-
-                            <label class="block text-sm font-medium text-slate-700 mb-1">
-                                Tipo de empaque
-                            </label>
-
-                            <input
-                                v-model="form.packaging_type"
-                                type="text"
-                                maxlength="100"
-                                class="w-full rounded-lg border-slate-300
-                                       focus:border-emerald-500
-                                       focus:ring-emerald-500"
-                            />
-
-                            <p
-                                v-if="form.errors.packaging_type"
-                                class="text-sm text-red-600 mt-1"
+                            <FormField
+                                label="Precio unitario (Bs.)"
+                                for-id="unit_price"
+                                :error="form.errors.unit_price"
+                                required
                             >
-                                {{ form.errors.packaging_type }}
-                            </p>
+                                <input
+                                    id="unit_price"
+                                    v-model="form.unit_price"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    class="form-input text-right font-mono"
+                                    :class="{ 'is-invalid': form.errors.unit_price }"
+                                />
+                            </FormField>
+
+                            <FormField
+                                label="Stock mínimo"
+                                for-id="minimum_stock"
+                                :error="form.errors.minimum_stock"
+                                optional
+                            >
+                                <input
+                                    id="minimum_stock"
+                                    v-model="form.minimum_stock"
+                                    type="number"
+                                    min="0"
+                                    step="1"
+                                    class="form-input text-right font-mono"
+                                    :class="{ 'is-invalid': form.errors.minimum_stock }"
+                                />
+                            </FormField>
 
                         </div>
+                    </FormSection>
 
+                    <template #aside>
 
-                        <!-- Contenido neto -->
+                        <FormHelp
+                            title="Resumen de la variante"
+                            description="Vista previa de la configuración."
+                            tone="emerald"
+                        >
+                            <template #icon>
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2.25-9.75V19.5a2.25 2.25 0 01-2.25 2.25H9a2.25 2.25 0 01-2.25-2.25V4.5A2.25 2.25 0 019 2.25h4.5A2.25 2.25 0 0115.75 4.5z" />
+                                </svg>
+                            </template>
 
-                        <div>
+                            <dl class="space-y-2.5">
+                                <div class="flex items-start justify-between gap-3">
+                                    <dt class="text-slate-400">Producto</dt>
+                                    <dd class="text-right font-semibold text-slate-700">
+                                        {{ productoSeleccionado ? `${productoSeleccionado.code} - ${productoSeleccionado.name}` : 'Sin seleccionar' }}
+                                    </dd>
+                                </div>
+                                <div class="flex items-start justify-between gap-3">
+                                    <dt class="text-slate-400">SKU</dt>
+                                    <dd class="text-right font-semibold text-slate-700">{{ variante.sku }}</dd>
+                                </div>
+                                <div class="flex items-start justify-between gap-3">
+                                    <dt class="text-slate-400">Unidad base</dt>
+                                    <dd class="text-right font-semibold text-slate-700">
+                                        {{ unidadBaseSeleccionada ? `${unidadBaseSeleccionada.name} (${unidadBaseSeleccionada.symbol})` : 'Sin definir' }}
+                                    </dd>
+                                </div>
+                                <div class="flex items-start justify-between gap-3">
+                                    <dt class="text-slate-400">Empaque</dt>
+                                    <dd class="text-right font-semibold text-slate-700">
+                                        {{ usaEmpaque ? `${Number(form.factor_empaque)} x ${unidadEmpaqueSeleccionada?.symbol ?? ''}` : 'Sin empaque' }}
+                                    </dd>
+                                </div>
+                                <div class="flex items-start justify-between gap-3">
+                                    <dt class="text-slate-400">Precio</dt>
+                                    <dd class="text-right font-semibold text-slate-700">Bs. {{ Number(form.unit_price || 0).toFixed(2) }}</dd>
+                                </div>
+                                <div class="flex items-start justify-between gap-3">
+                                    <dt class="text-slate-400">Stock mínimo</dt>
+                                    <dd class="text-right font-semibold text-slate-700">{{ Number(form.minimum_stock || 0) }}</dd>
+                                </div>
+                            </dl>
+                        </FormHelp>
 
-                            <label class="block text-sm font-medium text-slate-700 mb-1">
-                                Contenido neto
-                            </label>
+                        <FormHelp
+                            title="Unidad base"
+                            description="La referencia de todo el inventario."
+                            tone="blue"
+                        >
+                            <template #icon>
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                                </svg>
+                            </template>
 
-                            <input
-                                v-model="form.net_content"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                class="w-full rounded-lg border-slate-300
-                                       focus:border-emerald-500
-                                       focus:ring-emerald-500"
-                            />
-
-                            <p
-                                v-if="form.errors.net_content"
-                                class="text-sm text-red-600 mt-1"
-                            >
-                                {{ form.errors.net_content }}
+                            <p>
+                                Elige la unidad en la que se cuenta el stock: una botella, una lata o una bolsa.
+                                Los ingresos y las salidas se convertirán siempre a esta unidad.
                             </p>
+                        </FormHelp>
 
-                        </div>
+                        <FormHelp
+                            title="Empaque y precios"
+                            description="Facilita la compra y la venta."
+                            tone="amber"
+                        >
+                            <template #icon>
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-4.5-9.75h7.125a2.625 2.625 0 010 5.25H9.375a2.625 2.625 0 000 5.25H16.5" />
+                                </svg>
+                            </template>
 
-
-                        <!-- Precio unitario -->
-
-                        <div>
-
-                            <label class="block text-sm font-medium text-slate-700 mb-1">
-                                Precio unitario (Bs.)
-                            </label>
-
-                            <input
-                                v-model="form.unit_price"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                class="w-full rounded-lg border-slate-300
-                                       focus:border-emerald-500
-                                       focus:ring-emerald-500"
-                            />
-
-                            <p
-                                v-if="form.errors.unit_price"
-                                class="text-sm text-red-600 mt-1"
-                            >
-                                {{ form.errors.unit_price }}
+                            <p class="mb-2">
+                                Si configuras una caja, indica cuántas unidades base contiene.
+                                Así podrás registrar ingresos y ventas por caja o por unidad.
                             </p>
-
-                        </div>
-
-
-                        <!-- Stock -->
-
-                        <div>
-
-                            <label class="block text-sm font-medium text-slate-700 mb-1">
-                                Stock actual
-                            </label>
-
-                            <input
-                                v-model="form.stock"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                class="w-full rounded-lg border-slate-300
-                                       focus:border-emerald-500
-                                       focus:ring-emerald-500"
-                            />
-
-                            <p class="text-xs text-slate-500 mt-1">
-                                El stock también se modifica mediante ingresos, salidas y ventas.
+                            <p>
+                                El precio unitario corresponde siempre a la unidad base del inventario.
                             </p>
+                        </FormHelp>
 
-                            <p
-                                v-if="form.errors.stock"
-                                class="text-sm text-red-600 mt-1"
-                            >
-                                {{ form.errors.stock }}
-                            </p>
+                    </template>
 
-                        </div>
+                </FormLayout>
 
-
-                        <!-- Stock mínimo -->
-
-                        <div>
-
-                            <label class="block text-sm font-medium text-slate-700 mb-1">
-                                Stock mínimo
-                            </label>
-
-                            <input
-                                v-model="form.minimum_stock"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                class="w-full rounded-lg border-slate-300
-                                       focus:border-emerald-500
-                                       focus:ring-emerald-500"
-                            />
-
-                            <p
-                                v-if="form.errors.minimum_stock"
-                                class="text-sm text-red-600 mt-1"
-                            >
-                                {{ form.errors.minimum_stock }}
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div
-                    class="flex justify-end gap-3 px-6 py-4
-                           bg-slate-50 border-t border-slate-200 rounded-b-xl"
-                >
+                <FormActions>
 
                     <Link :href="route('variantes.index')">
-
-                        <Button
-                            type="button"
-                            color="secondary"
-                        >
+                        <Button type="button" color="secondary">
                             Cancelar
                         </Button>
-
                     </Link>
 
-
-                    <Button
-                        type="submit"
-                        :disabled="form.processing"
-                    >
-                        {{ form.processing
-                            ? 'Guardando...'
-                            : 'Guardar cambios'
-                        }}
+                    <Button type="submit" :disabled="form.processing">
+                        <svg v-if="!form.processing" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                        {{ form.processing ? 'Guardando...' : 'Guardar cambios' }}
                     </Button>
 
-                </div>
+                </FormActions>
 
             </form>
 

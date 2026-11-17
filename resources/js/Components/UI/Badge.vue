@@ -1,9 +1,14 @@
 <script setup>
 
 defineProps({
-
-color:String
-
+    color: {
+        type: String,
+        default: 'gray'
+    },
+    dot: {
+        type: Boolean,
+        default: false
+    }
 })
 
 </script>
@@ -11,32 +16,23 @@ color:String
 <template>
 
 <span
-class="px-3 py-1 rounded-full text-xs font-semibold"
-
-:class="{
-
-'bg-emerald-100 text-emerald-700':color=='green',
-
-'bg-red-100 text-red-700':color=='red',
-
-'bg-blue-100 text-blue-700':color=='blue',
-
-'bg-yellow-100 text-yellow-700':color=='yellow',
-
-'bg-gray-100 text-gray-700':color=='gray',
-
-'bg-indigo-100 text-indigo-700':color=='indigo',
-
-'bg-orange-100 text-orange-700':color=='orange',
-
-'bg-purple-100 text-purple-700':color=='purple'
-
-}"
-
+    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset"
+    :class="{
+        'bg-emerald-50 text-emerald-700 ring-emerald-200': color == 'green' || color == 'emerald',
+        'bg-red-50 text-red-700 ring-red-200': color == 'red',
+        'bg-blue-50 text-blue-700 ring-blue-200': color == 'blue',
+        'bg-amber-50 text-amber-700 ring-amber-200': color == 'yellow' || color == 'amber',
+        'bg-slate-50 text-slate-600 ring-slate-200': color == 'gray' || color == 'slate',
+        'bg-indigo-50 text-indigo-700 ring-indigo-200': color == 'indigo',
+        'bg-orange-50 text-orange-700 ring-orange-200': color == 'orange',
+        'bg-purple-50 text-purple-700 ring-purple-200': color == 'purple'
+    }"
 >
-
-<slot/>
-
+    <span
+        v-if="dot"
+        class="w-1.5 h-1.5 rounded-full bg-current"
+    />
+    <slot />
 </span>
 
 </template>

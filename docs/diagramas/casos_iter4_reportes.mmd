@@ -1,0 +1,31 @@
+flowchart LR
+    Gerente((Gerente))
+    Administrador((Administrador))
+
+    subgraph SISTEMA["Sistema CEFTE - Reportes"]
+        direction TB
+        UC00([Autenticarse])
+        UC01([Consultar panel de control])
+        UC02([Consultar informes de ingresos])
+        UC03([Consultar variantes bajo stock mínimo])
+        UC04([Consultar kardex de movimientos])
+    end
+
+    Gerente --> UC01
+    Gerente --> UC02
+    Gerente --> UC03
+    Gerente --> UC04
+    Administrador --> UC01
+    Administrador --> UC02
+    Administrador --> UC03
+    Administrador --> UC04
+
+    UC01 -. include .-> UC00
+    UC02 -. include .-> UC00
+    UC03 -. include .-> UC00
+    UC04 -. include .-> UC00
+
+    classDef actor fill:#e8eaf6,stroke:#3949ab,stroke-width:2px
+    classDef caso fill:#fff3e0,stroke:#fb8c00,stroke-width:1px
+    class Gerente,Administrador actor
+    class UC00,UC01,UC02,UC03,UC04 caso

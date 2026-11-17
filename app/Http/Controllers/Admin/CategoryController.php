@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -29,6 +30,12 @@ class CategoryController extends Controller
 
         return Inertia::render('Inventario/Categorias/Index', [
             'categorias' => $categorias,
+            'resumen' => [
+                'total' => Category::count(),
+                'productos' => Product::count(),
+                'conProductos' => Category::whereHas('products')->count(),
+                'sinProductos' => Category::doesntHave('products')->count(),
+            ],
             'filters' => [
                 'buscar' => $buscar,
             ],

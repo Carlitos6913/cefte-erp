@@ -32,18 +32,21 @@ class CorrelativosTest extends TestCase
     {
         $user = $this->usuario();
         $variante = $this->crearVariante();
+        $encargado = $this->crearEncargado();
 
         $this->actingAs($user)->post('/ingresos', [
             'fecha' => '2026-09-25',
+            'encargado_id' => $encargado->id,
             'detalles' => [
-                ['product_variant_id' => $variante->id, 'cantidad' => 1, 'precio_unitario' => 4],
+                ['product_variant_id' => $variante->id, 'lote' => 'L-1', 'fecha_caducidad' => '2027-01-01', 'unidad_id' => $variante->unidad_base_id, 'cantidad' => 1, 'precio_unitario' => 4],
             ],
         ])->assertSessionHasNoErrors();
 
         $this->actingAs($user)->post('/ingresos', [
             'fecha' => '2026-09-26',
+            'encargado_id' => $encargado->id,
             'detalles' => [
-                ['product_variant_id' => $variante->id, 'cantidad' => 1, 'precio_unitario' => 4],
+                ['product_variant_id' => $variante->id, 'lote' => 'L-2', 'fecha_caducidad' => '2027-02-01', 'unidad_id' => $variante->unidad_base_id, 'cantidad' => 1, 'precio_unitario' => 4],
             ],
         ])->assertSessionHasNoErrors();
 
@@ -59,7 +62,7 @@ class CorrelativosTest extends TestCase
             'fecha' => '2026-09-28',
             'pago_tipo' => 'contado',
             'detalles' => [
-                ['product_variant_id' => $variante->id, 'cantidad' => 1, 'precio_unitario' => 5],
+                ['product_variant_id' => $variante->id, 'unidad_id' => $variante->unidad_base_id, 'cantidad' => 1, 'precio_unitario' => 5],
             ],
         ])->assertSessionHasNoErrors();
 

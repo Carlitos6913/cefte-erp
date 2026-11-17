@@ -41,10 +41,6 @@ const submit = () => {
                     <div class="text-5xl font-black tracking-tight">
                         CEFTE
                     </div>
-
-                    <div class="text-emerald-400 text-xl font-semibold tracking-widest">
-                        ERP
-                    </div>
                 </div>
 
                 <h1 class="text-4xl font-bold leading-tight max-w-lg">
@@ -79,10 +75,6 @@ const submit = () => {
                     <div class="lg:hidden mb-6">
                         <div class="text-4xl font-black text-slate-900">
                             CEFTE
-                        </div>
-
-                        <div class="text-emerald-600 font-bold tracking-widest">
-                            ERP
                         </div>
                     </div>
 
@@ -199,7 +191,7 @@ const submit = () => {
 
 
                 <div class="mt-8 text-center text-xs text-slate-400">
-                    CEFTE ERP · Sistema de gestión administrativa
+                    CEFTE · Sistema de gestión administrativa
                 </div>
 
             </div>

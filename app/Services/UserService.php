@@ -26,8 +26,6 @@ class UserService
 
             $roleName = $role->name;
         }
-
-        // Obtener o crear employee
         if (! empty($data['employee_id'])) {
             $employee = Employee::findOrFail($data['employee_id']);
         } else {
@@ -43,8 +41,6 @@ class UserService
                 'is_active' => true,
             ]);
         }
-
-        // La contraseña por defecto es el C.I. del empleado
         $password = $data['password'] ?? $employee->identity_card;
 
         $userName = $data['name'] ?? trim("{$employee->first_name} {$employee->first_surname}");
@@ -57,7 +53,7 @@ class UserService
             'password' => Hash::make($password),
             'is_active' => true,
             'employee_id' => $employee->id,
-            'must_change_password' => true,
+            'must_change_password' => false,
         ]);
 
         $user->assignRole($roleName);
@@ -82,15 +78,12 @@ class UserService
             $roleName = $role->name;
         }
 
-        // Actualizar employee si se proporcionan datos
         if ($user->employee && ! empty($data['employee_id'])) {
-            // Si se está cambiando a otro employee existente
             if ($data['employee_id'] != $user->employee_id) {
                 $newEmployee = Employee::findOrFail($data['employee_id']);
                 $user->update(['employee_id' => $newEmployee->id]);
             }
         } elseif ($user->employee) {
-            // Actualizar datos del employee actual
             $user->employee->update([
                 'first_name' => $data['first_name'] ?? $user->employee->first_name,
                 'first_surname' => $data['first_surname'] ?? $user->employee->first_surname,
@@ -114,7 +107,7 @@ class UserService
         if (! empty($data['password'])) {
             $user->update([
                 'password' => Hash::make($data['password']),
-                'must_change_password' => true,
+                'must_change_password' => false,
             ]);
         }
 

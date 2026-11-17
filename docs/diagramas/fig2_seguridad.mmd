@@ -1,0 +1,42 @@
+erDiagram
+    "Empleado" |o--o| "Usuario" : "tiene cuenta"
+    "Usuario" }o--o{ "Rol" : "posee"
+    "Rol" }o--o{ "Permiso" : "concede"
+
+    "Empleado" {
+        entero id PK "Identificador"
+        texto nombre "Primer nombre"
+        texto apellido_paterno
+        texto apellido_materno "?"
+        texto(20) carnet_identidad UK "CI"
+        texto(20) teléfono "?"
+        texto dirección "?"
+        texto profesión "?"
+        texto(150) correo UK "?"
+        booleano activo
+    }
+
+    "Usuario" {
+        entero id PK "Identificador"
+        entero empleado_id FK, UK "→ Empleado"
+        texto nombre "Nombre de acceso"
+        texto correo UK
+        fecha correo_verificado_en "?"
+        texto contraseña "Hash bcrypt"
+        booleano activo
+        booleano debe_cambiar_contraseña
+        texto token_recordar "?"
+    }
+
+    "Rol" {
+        entero id PK "Identificador"
+        texto nombre UK "Ej.: Administrador"
+        texto guard UK "Ej.: web"
+        json módulos "Módulos habilitados"
+    }
+
+    "Permiso" {
+        entero id PK "Identificador"
+        texto nombre UK "Ej.: ventas.crear"
+        texto guard UK "Ej.: web"
+    }

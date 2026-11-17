@@ -16,12 +16,24 @@ class Product extends Model
         'code',
         'name',
         'description',
+        'image_path',
         'is_active',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    protected $appends = ['image_url'];
+
+    public function getImageUrlAttribute(): ?string
+    {
+        if (! $this->image_path) {
+            return null;
+        }
+
+        return asset($this->image_path);
+    }
 
     public function category(): BelongsTo
     {

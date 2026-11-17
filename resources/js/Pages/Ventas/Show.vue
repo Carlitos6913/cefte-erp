@@ -5,6 +5,7 @@ import { Head, Link } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import Button from '@/Components/UI/Button.vue'
 import Badge from '@/Components/UI/Badge.vue'
+import { presentacionVariante } from '@/utils/producto'
 
 
 const props = defineProps({
@@ -165,9 +166,6 @@ const totalPagado = () => {
 
                             <tr>
                                 <th class="p-4 text-left text-sm font-semibold text-slate-600">
-                                    Código
-                                </th>
-                                <th class="p-4 text-left text-sm font-semibold text-slate-600">
                                     Producto
                                 </th>
                                 <th class="p-4 text-left text-sm font-semibold text-slate-600">
@@ -193,17 +191,36 @@ const totalPagado = () => {
                                 :key="detalle.id"
                                 class="border-t border-slate-200"
                             >
-                                <td data-label="Código" class="p-4 font-medium text-slate-700">
-                                    {{ detalle.product_variant?.sku }}
-                                </td>
                                 <td data-label="Producto" class="p-4 text-slate-700">
-                                    {{ detalle.product_variant?.product?.name }}
+                                    <div class="font-medium text-slate-700">
+                                        {{ detalle.product_variant?.product?.name }}
+                                    </div>
+                                    <div
+                                        v-if="presentacionVariante(detalle.product_variant)"
+                                        class="text-xs text-slate-500"
+                                    >
+                                        {{ presentacionVariante(detalle.product_variant) }}
+                                    </div>
+                                    <div class="text-xs text-slate-400">
+                                        {{ detalle.product_variant?.sku }}
+                                    </div>
                                 </td>
                                 <td data-label="Unidad" class="p-4 text-slate-500">
-                                    {{ detalle.product_variant?.unit_measure?.name }}
+                                    {{ detalle.unidad?.name
+                                        ?? detalle.product_variant?.unidad_base?.name }}
                                 </td>
                                 <td data-label="Cantidad" class="p-4 text-right font-semibold">
-                                    {{ detalle.cantidad }}
+                                    {{ detalle.cantidad_original ?? detalle.cantidad }}
+
+                                    <p
+                                        v-if="detalle.unidad?.id
+                                                && detalle.unidad.id
+                                                !== detalle.product_variant?.unidad_base_id"
+                                        class="text-xs font-normal text-slate-500"
+                                    >
+                                        = {{ detalle.cantidad }}
+                                        {{ detalle.product_variant?.unidad_base?.symbol }}
+                                    </p>
                                 </td>
                                 <td data-label="Precio unitario" class="p-4 text-right">
                                     Bs. {{ formatoMoneda(detalle.precio_unitario) }}
@@ -214,7 +231,7 @@ const totalPagado = () => {
                             </tr>
 
                             <tr v-if="venta.detalles.length === 0" class="table-empty">
-                                <td colspan="6" class="p-8 text-center text-slate-500">
+                                <td colspan="5" class="p-8 text-center text-slate-500">
                                     Esta venta no tiene productos registrados.
                                 </td>
                             </tr>
@@ -224,7 +241,7 @@ const totalPagado = () => {
                         <tfoot>
 
                             <tr class="border-t-2 border-slate-200">
-                                <td colspan="5" class="p-5 text-right font-semibold text-slate-600">
+                                <td colspan="4" class="p-5 text-right font-semibold text-slate-600">
                                     Total
                                 </td>
                                 <td class="p-5 text-right text-xl font-bold text-slate-800">

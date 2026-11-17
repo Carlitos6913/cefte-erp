@@ -1,0 +1,36 @@
+flowchart LR
+    Administrador((Administrador))
+    Almacenero((Almacenero))
+
+    subgraph SISTEMA["Sistema CEFTE - Inventario"]
+        direction TB
+        UC00([Autenticarse])
+        UC01([Gestionar categorías])
+        UC02([Gestionar unidades de medida])
+        UC03([Registrar producto])
+        UC04([Registrar variante])
+        UC05([Registrar ingreso de mercadería])
+        UC06([Anular ingreso])
+        UC07([Consultar existencias])
+    end
+
+    Administrador --> UC01
+    Administrador --> UC02
+    Almacenero --> UC03
+    Almacenero --> UC04
+    Almacenero --> UC05
+    Almacenero --> UC06
+    Almacenero --> UC07
+
+    UC01 -. include .-> UC00
+    UC02 -. include .-> UC00
+    UC03 -. include .-> UC00
+    UC04 -. include .-> UC00
+    UC05 -. include .-> UC00
+    UC06 -. include .-> UC00
+    UC07 -. include .-> UC00
+
+    classDef actor fill:#e8eaf6,stroke:#3949ab,stroke-width:2px
+    classDef caso fill:#fff3e0,stroke:#fb8c00,stroke-width:1px
+    class Administrador,Almacenero actor
+    class UC00,UC01,UC02,UC03,UC04,UC05,UC06,UC07 caso

@@ -28,7 +28,7 @@ class FlujoSalidaVentaTest extends TestCase
             'fecha' => '2026-09-25',
             'pago_tipo' => 'contado',
             'detalles' => [
-                ['product_variant_id' => $variante->id, 'cantidad' => 1, 'precio_unitario' => 5],
+                ['product_variant_id' => $variante->id, 'unidad_id' => $variante->unidad_base_id, 'cantidad' => 1, 'precio_unitario' => 5],
             ],
         ]);
 
@@ -60,7 +60,7 @@ class FlujoSalidaVentaTest extends TestCase
             'fecha' => '2026-09-26',
             'pago_tipo' => 'contado',
             'detalles' => [
-                ['product_variant_id' => $variante->id, 'cantidad' => 1, 'precio_unitario' => 5],
+                ['product_variant_id' => $variante->id, 'unidad_id' => $variante->unidad_base_id, 'cantidad' => 1, 'precio_unitario' => 5],
             ],
         ]);
 
@@ -79,8 +79,9 @@ class FlujoSalidaVentaTest extends TestCase
 
         $this->actingAs($user)->post('/ingresos', [
             'fecha' => '2026-09-25',
+            'encargado_id' => $this->crearEncargado()->id,
             'detalles' => [
-                ['product_variant_id' => $variante->id, 'cantidad' => 10, 'precio_unitario' => 4],
+                ['product_variant_id' => $variante->id, 'lote' => 'L-TEST', 'fecha_caducidad' => '2027-01-01', 'unidad_id' => $variante->unidad_base_id, 'cantidad' => 10, 'precio_unitario' => 4],
             ],
         ])->assertSessionHasNoErrors();
 
@@ -100,7 +101,7 @@ class FlujoSalidaVentaTest extends TestCase
             'fecha' => '2026-09-27',
             'pago_tipo' => 'contado',
             'detalles' => [
-                ['product_variant_id' => $variante->id, 'cantidad' => 2, 'precio_unitario' => 8],
+                ['product_variant_id' => $variante->id, 'unidad_id' => $variante->unidad_base_id, 'cantidad' => 2, 'precio_unitario' => 8],
             ],
         ])->assertSessionHasNoErrors();
 
@@ -142,7 +143,7 @@ class FlujoSalidaVentaTest extends TestCase
             'fecha' => '2026-09-26',
             'pago_tipo' => 'contado',
             'detalles' => [
-                ['product_variant_id' => $variante->id, 'cantidad' => 3, 'precio_unitario' => 5],
+                ['product_variant_id' => $variante->id, 'unidad_id' => $variante->unidad_base_id, 'cantidad' => 3, 'precio_unitario' => 5],
             ],
         ]);
 
@@ -179,7 +180,7 @@ class FlujoSalidaVentaTest extends TestCase
             'fecha' => '2026-09-22',
             'pago_tipo' => 'contado',
             'detalles' => [
-                ['product_variant_id' => $variante->id, 'cantidad' => 4, 'precio_unitario' => 5],
+                ['product_variant_id' => $variante->id, 'unidad_id' => $variante->unidad_base_id, 'cantidad' => 4, 'precio_unitario' => 5],
             ],
         ])->assertSessionHasNoErrors();
 
@@ -211,7 +212,7 @@ class FlujoSalidaVentaTest extends TestCase
             'fecha' => '2026-09-26',
             'pago_tipo' => 'contado',
             'detalles' => [
-                ['product_variant_id' => $variante->id, 'cantidad' => 2, 'precio_unitario' => 5],
+                ['product_variant_id' => $variante->id, 'unidad_id' => $variante->unidad_base_id, 'cantidad' => 2, 'precio_unitario' => 5],
             ],
         ])->assertSessionHasNoErrors();
 
@@ -244,7 +245,7 @@ class FlujoSalidaVentaTest extends TestCase
             'fecha' => '2026-09-26',
             'pago_tipo' => 'contado',
             'detalles' => [
-                ['product_variant_id' => $variante->id, 'cantidad' => 2, 'precio_unitario' => 5],
+                ['product_variant_id' => $variante->id, 'unidad_id' => $variante->unidad_base_id, 'cantidad' => 2, 'precio_unitario' => 5],
             ],
         ])->assertSessionHasNoErrors();
 
@@ -279,7 +280,7 @@ class FlujoSalidaVentaTest extends TestCase
             'fecha' => '2026-09-26',
             'pago_tipo' => 'contado',
             'detalles' => [
-                ['product_variant_id' => $variante->id, 'cantidad' => 2, 'precio_unitario' => 5],
+                ['product_variant_id' => $variante->id, 'unidad_id' => $variante->unidad_base_id, 'cantidad' => 2, 'precio_unitario' => 5],
             ],
         ])->assertSessionHasNoErrors();
 
@@ -290,7 +291,7 @@ class FlujoSalidaVentaTest extends TestCase
             'fecha' => '2026-09-27',
             'pago_tipo' => 'contado',
             'detalles' => [
-                ['product_variant_id' => $variante->id, 'cantidad' => 4, 'precio_unitario' => 6],
+                ['product_variant_id' => $variante->id, 'unidad_id' => $variante->unidad_base_id, 'cantidad' => 4, 'precio_unitario' => 6],
             ],
         ])->assertSessionHasNoErrors();
 
@@ -321,7 +322,7 @@ class FlujoSalidaVentaTest extends TestCase
             'fecha' => '2026-09-26',
             'pago_tipo' => 'contado',
             'detalles' => [
-                ['product_variant_id' => $variante->id, 'cantidad' => 2, 'precio_unitario' => 5],
+                ['product_variant_id' => $variante->id, 'unidad_id' => $variante->unidad_base_id, 'cantidad' => 2, 'precio_unitario' => 5],
             ],
         ])->assertSessionHasNoErrors();
 

@@ -13,6 +13,53 @@
     }
 }
 
+@layer components {
+    .form-label {
+        @apply block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+        @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm transition placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/10;
+    }
+
+    .form-input:disabled,
+    .form-select:disabled,
+    .form-textarea:disabled {
+        @apply cursor-not-allowed bg-slate-100 text-slate-500;
+    }
+
+    .form-select {
+        @apply appearance-none pr-10 bg-no-repeat;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E");
+        background-position: right 0.875rem center;
+        background-size: 1rem 1rem;
+    }
+
+    .form-textarea {
+        @apply min-h-[92px] resize-y;
+    }
+
+    .form-input.is-invalid,
+    .form-select.is-invalid,
+    .form-textarea.is-invalid {
+        @apply border-red-300 bg-red-50/40 focus:border-red-400 focus:ring-red-500/10;
+    }
+
+    .form-error {
+        @apply text-xs font-medium text-red-500 mt-1.5;
+    }
+
+    .form-hint {
+        @apply text-xs text-slate-400 mt-1.5;
+    }
+
+    .form-checkbox {
+        @apply rounded border-slate-300 text-emerald-600 shadow-sm focus:ring-emerald-500;
+    }
+}
+
 /* En pantallas pequeñas las tablas de listado se convierten en tarjetas.
    Cada <td> debe llevar data-label="..." para mostrar su cabecera. */
 @media (max-width: 767px) {

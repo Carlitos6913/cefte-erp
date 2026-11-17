@@ -59,6 +59,12 @@ class UserController extends Controller
 
         return Inertia::render('Administracion/Usuarios/Index', [
             'usuarios' => $usuarios,
+            'resumen' => [
+                'total' => User::count(),
+                'activos' => User::where('is_active', true)->count(),
+                'inactivos' => User::where('is_active', false)->count(),
+                'conRol' => User::whereHas('roles')->count(),
+            ],
             'filters' => [
                 'buscar' => $buscar,
             ],

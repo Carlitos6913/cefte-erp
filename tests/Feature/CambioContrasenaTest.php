@@ -66,7 +66,7 @@ class CambioContrasenaTest extends TestCase
         $this->assertTrue($user->fresh()->must_change_password);
     }
 
-    public function test_nuevo_usuario_creado_con_contrasena_por_defecto_debe_cambiarla(): void
+    public function test_nuevo_usuario_creado_con_contrasena_por_defecto_no_debe_cambiarla(): void
     {
         $user = $this->usuario();
         $employee = Employee::create([
@@ -86,7 +86,7 @@ class CambioContrasenaTest extends TestCase
 
         $nuevo = User::where('employee_id', $employee->id)->firstOrFail();
 
-        $this->assertTrue($nuevo->must_change_password);
+        $this->assertFalse($nuevo->must_change_password);
         $this->assertTrue(Hash::check('1234567', $nuevo->password));
     }
 }

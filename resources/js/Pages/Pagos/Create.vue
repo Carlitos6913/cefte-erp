@@ -5,6 +5,12 @@ import { computed } from 'vue'
 
 import AppLayout from '@/Layouts/AppLayout.vue'
 import Button from '@/Components/UI/Button.vue'
+import PageHeader from '@/Components/UI/PageHeader.vue'
+import FormLayout from '@/Components/UI/FormLayout.vue'
+import FormSection from '@/Components/UI/FormSection.vue'
+import FormField from '@/Components/UI/FormField.vue'
+import FormHelp from '@/Components/UI/FormHelp.vue'
+import FormActions from '@/Components/UI/FormActions.vue'
 
 
 const props = defineProps({
@@ -23,6 +29,7 @@ const formatoMoneda = (valor) => {
 
 
 const totalPagado = computed(() => {
+    if (!props.venta.pagos) return 0
     return props.venta.pagos.reduce(
         (sum, pago) => sum + Number(pago.monto),
         0
@@ -64,207 +71,185 @@ const registrar = () => {
 
     <AppLayout>
 
-        <div class="max-w-3xl mx-auto">
+        <div class="max-w-6xl mx-auto">
 
-            <div class="mb-6">
-
-                <div class="flex items-center gap-3">
-
-                    <Link
-                        :href="route('pagos.index')"
-                        class="text-slate-500 hover:text-slate-700"
-                    >
-                        &larr;
+            <PageHeader title="Registrar pago" :subtitle="`Venta ${venta.numero}`">
+                <template #icon>
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+                    </svg>
+                </template>
+                <template #actions>
+                    <Link :href="route('pagos.index')">
+                        <Button color="secondary">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                            </svg>
+                            Volver al listado
+                        </Button>
                     </Link>
-
-                    <h1 class="text-3xl font-bold text-slate-800">
-                        Registrar pago
-                    </h1>
-
-                </div>
-
-                <p class="text-sm text-slate-500 mt-1">
-                    Venta {{ venta.numero }}
-                </p>
-
-            </div>
+                </template>
+            </PageHeader>
 
 
-            <!-- Resumen de la venta -->
+            <form @submit.prevent="registrar">
 
-            <div class="bg-white rounded-xl border border-slate-200 p-6 mb-6">
+                <FormLayout :aside="true">
 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-
-                    <div>
-                        <p class="text-sm text-slate-500">Total venta</p>
-                        <p class="font-bold text-slate-800">
-                            Bs. {{ formatoMoneda(venta.total) }}
-                        </p>
-                    </div>
-
-                    <div>
-                        <p class="text-sm text-slate-500">Ya pagado</p>
-                        <p class="font-bold text-emerald-600">
-                            Bs. {{ formatoMoneda(totalPagado) }}
-                        </p>
-                    </div>
-
-                    <div>
-                        <p class="text-sm text-slate-500">Saldo pendiente</p>
-                        <p class="font-bold text-red-600">
-                            Bs. {{ formatoMoneda(saldoRestante) }}
-                        </p>
-                    </div>
-
-                    <div>
-                        <p class="text-sm text-slate-500">Cliente</p>
-                        <p class="font-semibold text-slate-800">
-                            {{ venta.clienteRelacion?.nombre ?? venta.cliente ?? 'Sin cliente' }}
-                        </p>
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- Formulario de pago -->
-
-            <form
-                @submit.prevent="registrar"
-                class="bg-white rounded-xl border border-slate-200 p-6 space-y-6"
-            >
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                    <div>
-
-                        <label class="block text-sm font-medium text-slate-700 mb-1">
-                            Fecha del pago *
-                        </label>
-
-                        <input
-                            v-model="form.fecha"
-                            type="date"
-                            class="w-full rounded-lg border-slate-300
-                                   focus:border-emerald-500
-                                   focus:ring-emerald-500"
-                        />
-
-                        <p
-                            v-if="form.errors.fecha"
-                            class="text-sm text-red-600 mt-1"
-                        >
-                            {{ form.errors.fecha }}
-                        </p>
-
-                    </div>
-
-
-                    <div>
-
-                        <label class="block text-sm font-medium text-slate-700 mb-1">
-                            Monto a pagar (Bs.) *
-                        </label>
-
-                        <input
-                            v-model.number="form.monto"
-                            type="number"
-                            min="0.01"
-                            step="0.01"
-                            :max="saldoRestante"
-                            class="w-full rounded-lg border-slate-300
-                                   focus:border-emerald-500
-                                   focus:ring-emerald-500"
-                        />
-
-                        <p
-                            v-if="form.errors.monto"
-                            class="text-sm text-red-600 mt-1"
-                        >
-                            {{ form.errors.monto }}
-                        </p>
-
-                        <p class="text-xs text-slate-500 mt-1">
-                            Saldo restante después del pago:
-                            <span class="font-semibold text-slate-700">
-                                Bs. {{ formatoMoneda(Math.max(0, saldoRestante - form.monto)) }}
-                            </span>
-                        </p>
-
-                    </div>
-
-
-                    <div>
-
-                        <label class="block text-sm font-medium text-slate-700 mb-1">
-                            Método de pago *
-                        </label>
-
-                        <select
-                            v-model="form.metodo"
-                            class="w-full rounded-lg border-slate-300
-                                   focus:border-emerald-500
-                                   focus:ring-emerald-500"
-                        >
-                            <option value="efectivo">Efectivo</option>
-                            <option value="transferencia">Transferencia</option>
-                            <option value="qr">QR</option>
-                            <option value="otro">Otro</option>
-                        </select>
-
-                    </div>
-
-                </div>
-
-
-                <div>
-
-                    <label class="block text-sm font-medium text-slate-700 mb-1">
-                        Observaciones
-                    </label>
-
-                    <textarea
-                        v-model="form.observaciones"
-                        rows="2"
-                        placeholder="Nota sobre el pago..."
-                        class="w-full rounded-lg border-slate-300
-                               focus:border-emerald-500
-                               focus:ring-emerald-500"
-                    ></textarea>
-
-                </div>
-
-
-                <div class="flex justify-between items-center pt-4 border-t border-slate-200">
-
-                    <Button
-                        color="secondary"
-                        type="button"
-                        @click="pagarSaldoCompleto"
+                    <FormSection
+                        title="Datos del pago"
+                        description="Registra el abono al crédito de la venta seleccionada."
+                        tone="amber"
                     >
-                        Pagar saldo completo (Bs. {{ formatoMoneda(saldoRestante) }})
-                    </Button>
+                        <template #icon>
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+                            </svg>
+                        </template>
 
-                    <div class="flex gap-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <FormField label="Fecha del pago" for-id="fecha" :error="form.errors.fecha" required>
+                                <input
+                                    id="fecha"
+                                    v-model="form.fecha"
+                                    type="date"
+                                    class="form-input"
+                                    :class="{ 'is-invalid': form.errors.fecha }"
+                                />
+                            </FormField>
 
-                        <Link :href="route('pagos.index')">
-                            <Button color="secondary">
-                                Cancelar
+                            <FormField label="Monto a pagar (Bs.)" for-id="monto" :error="form.errors.monto" required>
+                                <input
+                                    id="monto"
+                                    v-model.number="form.monto"
+                                    type="number"
+                                    min="0.01"
+                                    step="0.01"
+                                    :max="saldoRestante"
+                                    class="form-input text-right font-mono"
+                                    :class="{ 'is-invalid': form.errors.monto }"
+                                />
+                                <p class="text-xs text-slate-500 mt-1.5">
+                                    Saldo restante después del pago:
+                                    <span class="font-semibold text-slate-700">
+                                        Bs. {{ formatoMoneda(Math.max(0, saldoRestante - form.monto)) }}
+                                    </span>
+                                </p>
+                            </FormField>
+
+                            <div class="md:col-span-2">
+                                <FormField label="Método de pago" for-id="metodo" :error="form.errors.metodo" required>
+                                    <select
+                                        id="metodo"
+                                        v-model="form.metodo"
+                                        class="form-select md:w-1/2"
+                                        :class="{ 'is-invalid': form.errors.metodo }"
+                                    >
+                                        <option value="efectivo">Efectivo</option>
+                                        <option value="transferencia">Transferencia</option>
+                                        <option value="qr">QR</option>
+                                        <option value="otro">Otro</option>
+                                    </select>
+                                </FormField>
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <FormField label="Observaciones" for-id="observaciones" :error="form.errors.observaciones" optional>
+                                    <textarea
+                                        id="observaciones"
+                                        v-model="form.observaciones"
+                                        rows="2"
+                                        placeholder="Nota sobre el pago..."
+                                        class="form-textarea"
+                                        :class="{ 'is-invalid': form.errors.observaciones }"
+                                    ></textarea>
+                                </FormField>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 flex justify-end">
+                            <Button
+                                color="secondary"
+                                type="button"
+                                @click="pagarSaldoCompleto"
+                            >
+                                Pagar saldo completo (Bs. {{ formatoMoneda(saldoRestante) }})
                             </Button>
-                        </Link>
+                        </div>
+                    </FormSection>
 
+                    <FormActions>
+                        <Link :href="route('pagos.index')">
+                            <Button type="button" color="secondary">Cancelar</Button>
+                        </Link>
                         <Button
                             type="submit"
                             :disabled="form.processing || form.monto <= 0 || form.monto > saldoRestante"
                         >
                             {{ form.processing ? 'Registrando...' : 'Registrar pago' }}
                         </Button>
+                    </FormActions>
 
-                    </div>
+                    <template #aside>
+                        <FormHelp title="Resumen de la venta" description="Estado de cuenta" tone="violet">
+                            <template #icon>
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+                                </svg>
+                            </template>
+                            <dl class="space-y-2.5">
+                                <div class="flex items-center justify-between gap-4">
+                                    <dt class="text-xs text-slate-500">Total venta</dt>
+                                    <dd class="text-sm font-semibold text-slate-700">Bs. {{ formatoMoneda(venta.total) }}</dd>
+                                </div>
+                                <div class="flex items-center justify-between gap-4">
+                                    <dt class="text-xs text-slate-500">Ya pagado</dt>
+                                    <dd class="text-sm font-semibold text-emerald-600">Bs. {{ formatoMoneda(totalPagado) }}</dd>
+                                </div>
+                                <div class="flex items-center justify-between gap-4">
+                                    <dt class="text-xs text-slate-500">Saldo pendiente</dt>
+                                    <dd class="text-sm font-bold text-red-600">Bs. {{ formatoMoneda(saldoRestante) }}</dd>
+                                </div>
+                                <div class="flex items-center justify-between gap-4 pt-2 border-t border-slate-100">
+                                    <dt class="text-xs text-slate-500">Cliente</dt>
+                                    <dd class="text-sm font-semibold text-slate-700 text-right">
+                                        {{ venta.clienteRelacion?.nombre ?? venta.cliente ?? 'Sin cliente' }}
+                                    </dd>
+                                </div>
+                            </dl>
+                        </FormHelp>
 
-                </div>
+                        <FormHelp title="Monto máximo" description="No superes el saldo" tone="amber">
+                            <template #icon>
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008zM10.34 3.94l-7.5 12.99A1.5 1.5 0 004.14 19.5h15.72a1.5 1.5 0 001.3-2.57l-7.5-12.99a1.5 1.5 0 00-2.6 0z" />
+                                </svg>
+                            </template>
+                            <ul class="space-y-2 text-xs leading-relaxed">
+                                <li class="flex gap-2">
+                                    <span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0"></span>
+                                    <span>Puedes registrar abonos parciales hasta el saldo pendiente.</span>
+                                </li>
+                                <li class="flex gap-2">
+                                    <span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0"></span>
+                                    <span>El monto máximo permitido para este pago es Bs. {{ formatoMoneda(saldoRestante) }}.</span>
+                                </li>
+                            </ul>
+                        </FormHelp>
+
+                        <FormHelp title="Buenas prácticas" description="Registro confiable" tone="emerald">
+                            <template #icon>
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </template>
+                            <p class="text-xs leading-relaxed">
+                                Confirma la fecha, el método de pago y el monto antes de registrar. Los abonos actualizan el saldo de la venta de forma inmediata.
+                            </p>
+                        </FormHelp>
+                    </template>
+
+                </FormLayout>
 
             </form>
 

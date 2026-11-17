@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import Button from '@/Components/UI/Button.vue'
 import Badge from '@/Components/UI/Badge.vue'
+import { presentacionVariante } from '@/utils/producto'
 
 const props = defineProps({ salida: Object })
 
@@ -84,8 +85,9 @@ const motivoColor = (motivo) => {
                     <table class="w-full table-responsive">
                         <thead class="bg-slate-50">
                             <tr>
-                                <th class="p-4 text-left text-sm font-semibold text-slate-600">Código</th>
                                 <th class="p-4 text-left text-sm font-semibold text-slate-600">Producto</th>
+                                <th class="p-4 text-left text-sm font-semibold text-slate-600">Lote</th>
+                                <th class="p-4 text-left text-sm font-semibold text-slate-600">Caducidad</th>
                                 <th class="p-4 text-left text-sm font-semibold text-slate-600">Unidad</th>
                                 <th class="p-4 text-right text-sm font-semibold text-slate-600">Cantidad</th>
                                 <th class="p-4 text-right text-sm font-semibold text-slate-600">P. Unitario</th>
@@ -94,8 +96,22 @@ const motivoColor = (motivo) => {
                         </thead>
                         <tbody>
                             <tr v-for="detalle in salida.detalles" :key="detalle.id" class="border-t border-slate-200">
-                                <td data-label="Código" class="p-4 font-medium text-slate-700">{{ detalle.product_variant?.sku }}</td>
-                                <td data-label="Producto" class="p-4 text-slate-700">{{ detalle.product_variant?.product?.name }}</td>
+                                <td data-label="Producto" class="p-4 text-slate-700">
+                                    <div class="font-medium text-slate-700">
+                                        {{ detalle.product_variant?.product?.name }}
+                                    </div>
+                                    <div
+                                        v-if="presentacionVariante(detalle.product_variant)"
+                                        class="text-xs text-slate-500"
+                                    >
+                                        {{ presentacionVariante(detalle.product_variant) }}
+                                    </div>
+                                    <div class="text-xs text-slate-400">
+                                        {{ detalle.product_variant?.sku }}
+                                    </div>
+                                </td>
+                                <td data-label="Lote" class="p-4 text-slate-700">{{ detalle.lote?.codigo ?? '-' }}</td>
+                                <td data-label="Caducidad" class="p-4 text-slate-500">{{ formatoFecha(detalle.lote?.fecha_caducidad) }}</td>
                                 <td data-label="Unidad" class="p-4 text-slate-500">{{ detalle.product_variant?.unit_measure?.name }}</td>
                                 <td data-label="Cantidad" class="p-4 text-right font-semibold text-red-600">
                                     -{{ detalle.cantidad }}
@@ -110,12 +126,12 @@ const motivoColor = (motivo) => {
                                 <td data-label="Subtotal" class="p-4 text-right font-semibold text-slate-800">Bs. {{ formatoMoneda(detalle.subtotal) }}</td>
                             </tr>
                             <tr v-if="salida.detalles.length === 0" class="table-empty">
-                                <td colspan="6" class="p-8 text-center text-slate-500">Esta salida no tiene productos registrados.</td>
+                                <td colspan="7" class="p-8 text-center text-slate-500">Esta salida no tiene productos registrados.</td>
                             </tr>
                         </tbody>
                         <tfoot>
                             <tr class="border-t-2 border-slate-200">
-                                <td colspan="5" class="p-5 text-right font-semibold text-slate-600">Total</td>
+                                <td colspan="6" class="p-5 text-right font-semibold text-slate-600">Total</td>
                                 <td class="p-5 text-right text-xl font-bold text-slate-800">Bs. {{ formatoMoneda(salida.total) }}</td>
                             </tr>
                         </tfoot>

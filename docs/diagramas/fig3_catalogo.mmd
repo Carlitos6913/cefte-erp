@@ -1,0 +1,45 @@
+erDiagram
+    "Categoría" |o--o{ "Producto" : "agrupa"
+    "Producto" ||--o{ "Variante" : "genera"
+    "Unidad de Medida" ||--o{ "Variante" : "unidad de medida"
+    "Unidad de Medida" |o--o{ "Variante" : "unidad base"
+    "Unidad de Medida" |o--o{ "Variante" : "unidad de empaque"
+
+    "Categoría" {
+        entero id PK "Identificador"
+        texto(20) código UK "Código corto"
+        texto(100) nombre
+        texto descripción "?"
+    }
+
+    "Producto" {
+        entero id PK "Identificador"
+        entero categoria_id FK "? → Categoría"
+        texto(30) código UK "Código del producto"
+        texto(150) nombre
+        texto descripción "?"
+        booleano activo
+    }
+
+    "Variante" {
+        entero id PK "Identificador"
+        entero producto_id FK "→ Producto"
+        entero unidad_medida_id FK "→ Unidad de medida"
+        entero unidad_base_id FK "? → Unidad de medida"
+        entero unidad_empaque_id FK "? → Unidad de medida"
+        decimal factor_empaque "? Unidades por empaque"
+        texto(50) sku UK "Código SKU"
+        texto(100) sabor "?"
+        texto(100) tipo_empaque "?"
+        decimal contenido_neto "?"
+        decimal stock "Existencias actuales"
+        decimal stock_minimo "Alerta de reposición"
+        decimal precio_unitario "Precio de venta"
+        booleano activo
+    }
+
+    "Unidad de Medida" {
+        entero id PK "Identificador"
+        texto(50) nombre "Ej.: Caja"
+        texto(10) símbolo "Ej.: CJA"
+    }

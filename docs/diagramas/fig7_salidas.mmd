@@ -1,0 +1,74 @@
+erDiagram
+    "Usuario" ||--o{ "Salida" : "registra"
+    "Salida" ||--o{ "Detalle de salida" : "contiene"
+    "Variante" ||--o{ "Detalle de salida" : "despacha"
+    "Lote" |o--o{ "Detalle de salida" : "se despacha por FEFO"
+    "Unidad de Medida" |o--o{ "Detalle de salida" : "unidad de referencia"
+    "Detalle de salida" ||--o{ "Salida venta" : "origina"
+    "Detalle de venta" ||--o{ "Salida venta" : "origina"
+
+    "Salida" {
+        entero id PK "Identificador"
+        texto(30) número UK "N.º de documento"
+        fecha fecha "Fecha de la salida"
+        texto(50) motivo "Ej.: Venta / Merma / Traslado"
+        entero usuario_id FK "→ Usuario"
+        decimal total "Suma de los detalles"
+        texto(20) estado "activo / anulado"
+        texto observaciones "?"
+    }
+
+    "Detalle de salida" {
+        entero id PK "Identificador"
+        entero salida_id FK "→ Salida"
+        entero variante_id FK "→ Variante"
+        entero lote_id FK "? → Lote (asignado por FEFO)"
+        entero unidad_id FK "? → Unidad de medida"
+        entero cantidad "Unidades despachadas"
+        entero cantidad_vendida "Unidades ya vendidas"
+        decimal cantidad_original "? Cantidad en unidad original"
+        decimal precio_unitario "Precio por unidad"
+        decimal subtotal "cantidad × precio"
+    }
+
+    "Salida venta" {
+        entero id PK "Identificador"
+        entero salida_detalle_id FK "→ Detalle de salida"
+        entero venta_detalle_id FK "→ Detalle de venta"
+        entero cantidad "Unidades vinculadas"
+    }
+
+    "Detalle de venta" {
+        entero id PK "Identificador"
+        entero venta_id FK "→ Venta"
+        entero variante_id FK "→ Variante"
+        entero cantidad "Unidades vendidas"
+    }
+
+    "Lote" {
+        entero id PK "Identificador"
+        entero variante_id FK "→ Variante"
+        texto(50) código "Código de lote"
+        fecha fecha_caducidad "Fecha de vencimiento"
+        decimal stock "Existencias del lote"
+    }
+
+    "Variante" {
+        entero id PK "Identificador"
+        texto(50) sku UK "Código SKU"
+        texto(100) sabor "?"
+        decimal stock "Existencias (suma de lotes)"
+    }
+
+    "Usuario" {
+        entero id PK "Identificador"
+        texto nombre "Nombre de acceso"
+        texto correo UK
+        booleano activo
+    }
+
+    "Unidad de Medida" {
+        entero id PK "Identificador"
+        texto(50) nombre "Ej.: Caja"
+        texto(10) símbolo "Ej.: CJA"
+    }

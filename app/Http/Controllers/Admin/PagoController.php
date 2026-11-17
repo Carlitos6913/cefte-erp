@@ -16,9 +16,11 @@ class PagoController extends Controller
     {
         $buscar = $request->buscar;
 
-        $ventasConDeuda = Venta::where('pago_tipo', 'credito')
+        $baseDeuda = Venta::where('pago_tipo', 'credito')
             ->where('saldo_pendiente', '>', 0)
-            ->where('estado', 'activo')
+            ->where('estado', 'activo');
+
+        $ventasConDeuda = (clone $baseDeuda)
             ->with(['clienteRelacion', 'usuario'])
             ->when($buscar, function ($query) use ($buscar) {
                 $query->where(function ($q) use ($buscar) {
@@ -33,8 +35,20 @@ class PagoController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        $resumen = [
+            'ventasConDeuda' => (clone $baseDeuda)->count(),
+            'deudaTotal' => (float) (clone $baseDeuda)->sum('saldo_pendiente'),
+            'pagosDelMes' => Pago::whereYear('fecha', now()->year)
+                ->whereMonth('fecha', now()->month)
+                ->count(),
+            'montoCobradoMes' => (float) Pago::whereYear('fecha', now()->year)
+                ->whereMonth('fecha', now()->month)
+                ->sum('monto'),
+        ];
+
         return Inertia::render('Pagos/Index', [
             'ventasConDeuda' => $ventasConDeuda,
+            'resumen' => $resumen,
             'filters' => [
                 'buscar' => $buscar,
             ],
@@ -45,7 +59,7 @@ class PagoController extends Controller
     {
         $ventaId = $request->venta_id;
 
-        $venta = Venta::with(['clienteRelacion', 'detalles.producto', 'pagos'])
+        $venta = Venta::with(['clienteRelacion', 'pagos'])
             ->findOrFail($ventaId);
 
         if ($venta->saldo_pendiente <= 0) {
@@ -112,7 +126,7 @@ class PagoController extends Controller
 
     public function show(Venta $venta)
     {
-        $venta->load(['clienteRelacion', 'usuario', 'pagos.usuario', 'detalles.producto']);
+        $venta->load(['clienteRelacion', 'usuario', 'pagos.usuario']);
 
         return Inertia::render('Pagos/Show', [
             'venta' => $venta,

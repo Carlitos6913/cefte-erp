@@ -4,6 +4,10 @@ import { Head, Link, useForm } from '@inertiajs/vue3'
 
 import AppLayout from '@/Layouts/AppLayout.vue'
 import Button from '@/Components/UI/Button.vue'
+import PageHeader from '@/Components/UI/PageHeader.vue'
+import FormSection from '@/Components/UI/FormSection.vue'
+import FormField from '@/Components/UI/FormField.vue'
+import FormActions from '@/Components/UI/FormActions.vue'
 
 
 const form = useForm({
@@ -28,156 +32,151 @@ const guardar = () => {
 
     <AppLayout>
 
-        <div class="max-w-2xl mx-auto">
+        <PageHeader title="Nuevo cliente" subtitle="Registra un nuevo cliente en el sistema.">
+            <template #actions>
+                <Link :href="route('clientes.index')">
+                    <Button color="secondary">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                        </svg>
+                        Volver al listado
+                    </Button>
+                </Link>
+            </template>
+        </PageHeader>
 
-            <div class="mb-6">
-
-                <div class="flex items-center gap-3">
-
-                    <Link
-                        :href="route('clientes.index')"
-                        class="text-slate-500 hover:text-slate-700"
-                    >
-                        ←
-                    </Link>
-
-                    <h1 class="text-3xl font-bold text-slate-800">
-                        Nuevo cliente
-                    </h1>
-
-                </div>
-
-                <p class="text-sm text-slate-500 mt-1">
-                    Registra un nuevo cliente en el sistema.
-                </p>
-
-            </div>
-
+        <div class="max-w-3xl mx-auto">
 
             <form
                 @submit.prevent="guardar"
-                class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-6"
+                class="space-y-5"
             >
 
-                <div>
+                <FormSection
+                    title="Datos del cliente"
+                    description="Información general para identificar al cliente en el sistema."
+                    tone="emerald"
+                >
+                    <template #icon>
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                        </svg>
+                    </template>
 
-                    <label class="block text-sm font-medium text-slate-700 mb-1">
-                        Nombre completo *
-                    </label>
+                    <div class="space-y-5">
 
-                    <input
-                        v-model="form.nombre"
-                        type="text"
-                        placeholder="Nombre del cliente"
-                        class="w-full rounded-lg border-slate-300
-                               focus:border-emerald-500
-                               focus:ring-emerald-500"
-                    />
-
-                    <p
-                        v-if="form.errors.nombre"
-                        class="text-sm text-red-600 mt-1"
-                    >
-                        {{ form.errors.nombre }}
-                    </p>
-
-                </div>
-
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                    <div>
-
-                        <label class="block text-sm font-medium text-slate-700 mb-1">
-                            CI / NIT
-                        </label>
-
-                        <input
-                            v-model="form.ci_nit"
-                            type="text"
-                            placeholder="Ej. 1234567"
-                            class="w-full rounded-lg border-slate-300
-                                   focus:border-emerald-500
-                                   focus:ring-emerald-500"
-                        />
-
-                        <p
-                            v-if="form.errors.ci_nit"
-                            class="text-sm text-red-600 mt-1"
+                        <FormField
+                            label="Nombre completo"
+                            forId="cliente-nombre"
+                            :error="form.errors.nombre"
+                            hint="Nombre o razón social con el que se registrará el cliente."
+                            required
                         >
-                            {{ form.errors.ci_nit }}
-                        </p>
+                            <input
+                                id="cliente-nombre"
+                                v-model="form.nombre"
+                                type="text"
+                                placeholder="Nombre del cliente"
+                                class="form-input"
+                                :class="{ 'is-invalid': form.errors.nombre }"
+                            />
+                        </FormField>
 
-                    </div>
-
-
-                    <div>
-
-                        <label class="block text-sm font-medium text-slate-700 mb-1">
-                            Teléfono
-                        </label>
-
-                        <input
-                            v-model="form.telefono"
-                            type="text"
-                            placeholder="Ej. 71234567"
-                            class="w-full rounded-lg border-slate-300
-                                   focus:border-emerald-500
-                                   focus:ring-emerald-500"
-                        />
-
-                    </div>
-
-
-                    <div>
-
-                        <label class="block text-sm font-medium text-slate-700 mb-1">
-                            Email
-                        </label>
-
-                        <input
-                            v-model="form.email"
-                            type="email"
-                            placeholder="correo@ejemplo.com"
-                            class="w-full rounded-lg border-slate-300
-                                   focus:border-emerald-500
-                                   focus:ring-emerald-500"
-                        />
-
-                        <p
-                            v-if="form.errors.email"
-                            class="text-sm text-red-600 mt-1"
+                        <FormField
+                            label="CI / NIT"
+                            forId="cliente-ci-nit"
+                            :error="form.errors.ci_nit"
+                            hint="Documento de identidad o identificación tributaria."
+                            optional
                         >
-                            {{ form.errors.email }}
-                        </p>
+                            <input
+                                id="cliente-ci-nit"
+                                v-model="form.ci_nit"
+                                type="text"
+                                placeholder="Ej. 1234567"
+                                class="form-input"
+                                :class="{ 'is-invalid': form.errors.ci_nit }"
+                            />
+                        </FormField>
 
                     </div>
-
-                </div>
-
-
-                <div>
-
-                    <label class="block text-sm font-medium text-slate-700 mb-1">
-                        Dirección
-                    </label>
-
-                    <textarea
-                        v-model="form.direccion"
-                        rows="2"
-                        placeholder="Dirección del cliente..."
-                        class="w-full rounded-lg border-slate-300
-                               focus:border-emerald-500
-                               focus:ring-emerald-500"
-                    ></textarea>
-
-                </div>
+                </FormSection>
 
 
-                <div class="flex justify-end gap-3 pt-4 border-t border-slate-200">
+                <FormSection
+                    title="Contacto"
+                    description="Canales de comunicación y ubicación del cliente."
+                    tone="blue"
+                >
+                    <template #icon>
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                        </svg>
+                    </template>
+
+                    <div class="space-y-5">
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                            <FormField
+                                label="Teléfono"
+                                forId="cliente-telefono"
+                                :error="form.errors.telefono"
+                                optional
+                            >
+                                <input
+                                    id="cliente-telefono"
+                                    v-model="form.telefono"
+                                    type="text"
+                                    placeholder="Ej. 71234567"
+                                    class="form-input"
+                                    :class="{ 'is-invalid': form.errors.telefono }"
+                                />
+                            </FormField>
+
+                            <FormField
+                                label="Email"
+                                forId="cliente-email"
+                                :error="form.errors.email"
+                                optional
+                            >
+                                <input
+                                    id="cliente-email"
+                                    v-model="form.email"
+                                    type="email"
+                                    placeholder="correo@ejemplo.com"
+                                    class="form-input"
+                                    :class="{ 'is-invalid': form.errors.email }"
+                                />
+                            </FormField>
+
+                            <FormField
+                                label="Dirección"
+                                forId="cliente-direccion"
+                                :error="form.errors.direccion"
+                                class="md:col-span-2"
+                                optional
+                            >
+                                <textarea
+                                    id="cliente-direccion"
+                                    v-model="form.direccion"
+                                    rows="2"
+                                    placeholder="Dirección del cliente..."
+                                    class="form-textarea"
+                                    :class="{ 'is-invalid': form.errors.direccion }"
+                                ></textarea>
+                            </FormField>
+
+                        </div>
+
+                    </div>
+                </FormSection>
+
+
+                <FormActions>
 
                     <Link :href="route('clientes.index')">
-                        <Button color="secondary">
+                        <Button color="secondary" class="w-full sm:w-auto">
                             Cancelar
                         </Button>
                     </Link>
@@ -189,7 +188,7 @@ const guardar = () => {
                         {{ form.processing ? 'Guardando...' : 'Guardar cliente' }}
                     </Button>
 
-                </div>
+                </FormActions>
 
             </form>
 

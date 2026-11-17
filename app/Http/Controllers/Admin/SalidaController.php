@@ -8,6 +8,7 @@ use App\Models\Salida;
 use App\Services\InventarioService;
 use App\Services\NumeradorService;
 use App\Services\SalidaVentaService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -35,6 +36,7 @@ class SalidaController extends Controller
     {
         $salidas = Salida::with([
             'usuario',
+            'detalles.lote:id,codigo,fecha_caducidad',
             'detalles.productVariant.product',
             'detalles.productVariant.unitMeasure',
         ])
@@ -43,20 +45,70 @@ class SalidaController extends Controller
             ->latest('id')
             ->paginate(10);
 
+        $resumen = [
+            'total' => Salida::count(),
+            'esteMes' => Salida::where('fecha', '>=', now()->startOfMonth())->count(),
+            'hoy' => Salida::whereDate('fecha', now()->toDateString())->count(),
+            'anuladas' => Salida::where('estado', 'anulado')->count(),
+        ];
+
         return Inertia::render('Inventario/Salidas/Index', [
             'salidas' => $salidas,
+            'resumen' => $resumen,
         ]);
+    }
+
+    /**
+     * Variantes que se pueden elegir en el selector jerárquico.
+     *
+     * En creación solo se ofrecen variantes con stock. En edición se
+     * incluyen todas para poder mostrar las líneas que ya existían.
+     *
+     * @return Collection<int, ProductVariant>
+     */
+    private function productosParaSelector(bool $soloDisponibles): Collection
+    {
+        $consulta = ProductVariant::where('is_active', true)
+            ->conStock()
+            ->with([
+                'unitMeasure:id,name,symbol',
+                'unidadBase:id,name,symbol',
+                'unidadEmpaque:id,name,symbol',
+                'product:id,category_id,name,code,image_path',
+                'product.category:id,name',
+                'lotes' => fn ($query) => $query
+                    ->where('stock', '>', 0)
+                    ->orderBy('fecha_caducidad')
+                    ->orderBy('id')
+                    ->select('id', 'product_variant_id', 'codigo', 'fecha_caducidad', 'stock'),
+            ])
+            ->orderBy('sku');
+
+        if ($soloDisponibles) {
+            $consulta->conDisponible();
+        }
+
+        return $consulta
+            ->get([
+                'id',
+                'product_id',
+                'unit_measure_id',
+                'unidad_base_id',
+                'unidad_empaque_id',
+                'factor_empaque',
+                'sku',
+                'flavor',
+                'packaging_type',
+                'net_content',
+                'minimum_stock',
+                'unit_price',
+            ]);
     }
 
     public function create()
     {
         return Inertia::render('Inventario/Salidas/Create', [
-            'productos' => ProductVariant::where('is_active', true)
-                ->with('unitMeasure:id,name,symbol')
-                ->with('product:id,name,code')
-                ->where('stock', '>', 0)
-                ->orderBy('sku')
-                ->get(['id', 'product_id', 'unit_measure_id', 'sku', 'stock', 'unit_price']),
+            'productos' => $this->productosParaSelector(true),
         ]);
     }
 
@@ -72,11 +124,17 @@ class SalidaController extends Controller
         ]);
 
         foreach ($validated['detalles'] as $detalle) {
-            $variante = ProductVariant::find($detalle['product_variant_id']);
+            $variante = ProductVariant::with(['product', 'unitMeasure'])
+                ->find($detalle['product_variant_id']);
+            $disponible = $variante ? $this->inventario->stockDisponible($variante->id) : 0;
 
-            if ($variante && $variante->stock < $detalle['cantidad']) {
+            if ($variante && $disponible < $detalle['cantidad']) {
+                $etiqueta = $variante->presentacion
+                    ? "{$variante->product?->name} ({$variante->presentacion})"
+                    : $variante->product?->name;
+
                 return back()->withErrors([
-                    'detalles' => "Stock insuficiente para \"{$variante->product->name}\". Disponible: {$variante->stock}.",
+                    'detalles' => "Stock insuficiente para \"{$etiqueta}\". Disponible: {$disponible}.",
                 ])->withInput();
             }
         }
@@ -100,25 +158,31 @@ class SalidaController extends Controller
             foreach ($validated['detalles'] as $detalle) {
 
                 $variante = ProductVariant::findOrFail($detalle['product_variant_id']);
-                $subtotal = $detalle['cantidad'] * $variante->unit_price;
-                $total += $subtotal;
 
-                $salida->detalles()->create([
-                    'product_variant_id' => $detalle['product_variant_id'],
-                    'cantidad' => $detalle['cantidad'],
-                    'precio_unitario' => $variante->unit_price,
-                    'subtotal' => $subtotal,
-                ]);
-
-                $this->inventario->registrarMovimiento(
-                    $detalle['product_variant_id'],
-                    'salida',
+                // FEFO: primero sale el lote que caduca antes. El
+                // consumo puede repartirse en varias líneas (una por
+                // lote) manteniendo el mismo producto.
+                $asignaciones = $this->inventario->consumirSalidaFefo(
+                    $variante,
                     $detalle['cantidad'],
                     'salida',
                     $salida->id,
                     $numero,
                     Auth::id(),
                 );
+
+                foreach ($asignaciones as $asignacion) {
+                    $subtotal = $asignacion['cantidad'] * $variante->unit_price;
+                    $total += $subtotal;
+
+                    $salida->detalles()->create([
+                        'product_variant_id' => $variante->id,
+                        'lote_id' => $asignacion['lote_id'],
+                        'cantidad' => $asignacion['cantidad'],
+                        'precio_unitario' => $variante->unit_price,
+                        'subtotal' => $subtotal,
+                    ]);
+                }
             }
 
             $salida->update(['total' => $total]);
@@ -133,6 +197,7 @@ class SalidaController extends Controller
     {
         $salida = Salida::with([
             'usuario',
+            'detalles.lote:id,codigo,fecha_caducidad',
             'detalles.productVariant.product',
             'detalles.productVariant.unitMeasure',
         ])
@@ -146,6 +211,7 @@ class SalidaController extends Controller
     public function edit(string $id)
     {
         $salida = Salida::with([
+            'detalles.lote:id,codigo,fecha_caducidad',
             'detalles.productVariant.product',
             'detalles.productVariant.unitMeasure',
         ])
@@ -165,11 +231,7 @@ class SalidaController extends Controller
 
         return Inertia::render('Inventario/Salidas/Edit', [
             'salida' => $salida,
-            'productos' => ProductVariant::where('is_active', true)
-                ->with('unitMeasure:id,name,symbol')
-                ->with('product:id,name,code')
-                ->orderBy('sku')
-                ->get(['id', 'product_id', 'unit_measure_id', 'sku', 'stock', 'unit_price']),
+            'productos' => $this->productosParaSelector(false),
         ]);
     }
 
@@ -200,8 +262,12 @@ class SalidaController extends Controller
         DB::transaction(function () use ($salida, $validated) {
 
             foreach ($salida->detalles as $detalle) {
-                $this->inventario->revertir(
-                    $detalle->product_variant_id,
+                if ($detalle->lote_id === null) {
+                    continue;
+                }
+
+                $this->inventario->revertirSalida(
+                    $detalle->lote_id,
                     $detalle->cantidad,
                     'salida',
                     $salida->id,
@@ -215,25 +281,28 @@ class SalidaController extends Controller
 
             foreach ($validated['detalles'] as $detalle) {
                 $variante = ProductVariant::findOrFail($detalle['product_variant_id']);
-                $subtotal = $detalle['cantidad'] * $variante->unit_price;
-                $total += $subtotal;
 
-                $salida->detalles()->create([
-                    'product_variant_id' => $detalle['product_variant_id'],
-                    'cantidad' => $detalle['cantidad'],
-                    'precio_unitario' => $variante->unit_price,
-                    'subtotal' => $subtotal,
-                ]);
-
-                $this->inventario->registrarMovimiento(
-                    $detalle['product_variant_id'],
-                    'salida',
+                $asignaciones = $this->inventario->consumirSalidaFefo(
+                    $variante,
                     $detalle['cantidad'],
                     'salida',
                     $salida->id,
                     $salida->numero,
                     Auth::id(),
                 );
+
+                foreach ($asignaciones as $asignacion) {
+                    $subtotal = $asignacion['cantidad'] * $variante->unit_price;
+                    $total += $subtotal;
+
+                    $salida->detalles()->create([
+                        'product_variant_id' => $variante->id,
+                        'lote_id' => $asignacion['lote_id'],
+                        'cantidad' => $asignacion['cantidad'],
+                        'precio_unitario' => $variante->unit_price,
+                        'subtotal' => $subtotal,
+                    ]);
+                }
             }
 
             $salida->update([
@@ -267,8 +336,12 @@ class SalidaController extends Controller
         DB::transaction(function () use ($salida) {
 
             foreach ($salida->detalles as $detalle) {
-                $this->inventario->revertir(
-                    $detalle->product_variant_id,
+                if ($detalle->lote_id === null) {
+                    continue;
+                }
+
+                $this->inventario->revertirSalida(
+                    $detalle->lote_id,
                     $detalle->cantidad,
                     'salida',
                     $salida->id,

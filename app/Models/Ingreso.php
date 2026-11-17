@@ -11,7 +11,7 @@ class Ingreso extends Model
     protected $fillable = [
         'numero',
         'fecha',
-        'proveedor',
+        'encargado_id',
         'observaciones',
         'total',
         'estado',
@@ -31,5 +31,10 @@ class Ingreso extends Model
     public function usuario(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function encargado(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class, 'encargado_id');
     }
 }

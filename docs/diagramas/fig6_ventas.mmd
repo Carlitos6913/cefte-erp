@@ -1,0 +1,74 @@
+erDiagram
+    "Cliente" |o--o{ "Venta" : "adquiere"
+    "Usuario" ||--o{ "Venta" : "registra"
+    "Venta" ||--o{ "Detalle de venta" : "contiene"
+    "Variante" ||--o{ "Detalle de venta" : "se vende"
+    "Unidad de Medida" |o--o{ "Detalle de venta" : "unidad de referencia"
+    "Venta" ||--o{ "Pago" : "recibe"
+    "Usuario" ||--o{ "Pago" : "registra"
+
+    "Cliente" {
+        entero id PK "Identificador"
+        texto(150) nombre "Razón social o nombre"
+        texto(30) ci_nit UK "? Carnet o NIT"
+        texto(30) teléfono "?"
+        texto correo "?"
+        texto dirección "?"
+        booleano activo
+    }
+
+    "Venta" {
+        entero id PK "Identificador"
+        texto(30) número UK "N.º de documento"
+        fecha fecha "Fecha de la venta"
+        entero cliente_id FK "? → Cliente"
+        texto cliente "? Nombre libre (legado)"
+        entero usuario_id FK "→ Usuario"
+        texto(20) pago_tipo "contado / crédito"
+        decimal saldo_pendiente "Pendiente por cobrar"
+        decimal total "Suma de los detalles"
+        texto(20) estado "activo / anulado"
+        texto observaciones "?"
+    }
+
+    "Detalle de venta" {
+        entero id PK "Identificador"
+        entero venta_id FK "→ Venta"
+        entero variante_id FK "→ Variante"
+        entero unidad_id FK "? → Unidad de medida"
+        entero cantidad "Unidades vendidas"
+        decimal cantidad_original "? Cantidad en unidad original"
+        decimal precio_unitario "Precio por unidad"
+        decimal subtotal "cantidad × precio"
+    }
+
+    "Pago" {
+        entero id PK "Identificador"
+        entero venta_id FK "→ Venta"
+        fecha fecha "Fecha del cobro"
+        decimal monto "Importe pagado"
+        texto(30) método "efectivo / tarjeta / transferencia"
+        entero usuario_id FK "→ Usuario"
+        texto observaciones "?"
+    }
+
+    "Variante" {
+        entero id PK "Identificador"
+        texto(50) sku UK "Código SKU"
+        texto(100) sabor "?"
+        decimal precio_unitario "Precio de venta"
+        decimal stock "Existencias actuales"
+    }
+
+    "Usuario" {
+        entero id PK "Identificador"
+        texto nombre "Nombre de acceso"
+        texto correo UK
+        booleano activo
+    }
+
+    "Unidad de Medida" {
+        entero id PK "Identificador"
+        texto(50) nombre "Ej.: Caja"
+        texto(10) símbolo "Ej.: CJA"
+    }

@@ -1,0 +1,104 @@
+classDiagram
+    direction TB
+
+    class Cliente {
+        +int id
+        +string nombre
+        +string ci_nit
+        +string telefono
+        +string correo
+        +string direccion
+        +bool estado
+        +ventas() HasMany
+    }
+
+    class Venta {
+        +int id
+        +string numero
+        +date fecha
+        +int cliente_id
+        +string cliente
+        +int usuario_id
+        +string pago_tipo
+        +decimal saldo_pendiente
+        +decimal total
+        +string estado
+        +string observaciones
+        +detalles() HasMany
+        +pagos() HasMany
+        +clienteRelacion() BelongsTo
+        +usuario() BelongsTo
+    }
+
+    class VentaDetalle {
+        +int id
+        +int venta_id
+        +int variante_id
+        +int unidad_id
+        +int cantidad
+        +decimal cantidad_original
+        +decimal precio_unitario
+        +decimal subtotal
+        +venta() BelongsTo
+        +variante() BelongsTo
+        +salidaDetalles() BelongsToMany
+    }
+
+    class Pago {
+        +int id
+        +int venta_id
+        +date fecha
+        +decimal monto
+        +string metodo
+        +string observaciones
+        +int usuario_id
+        +venta() BelongsTo
+        +usuario() BelongsTo
+    }
+
+    class Salida {
+        +int id
+        +string numero
+        +date fecha
+        +string motivo
+        +int usuario_id
+        +decimal total
+        +string estado
+        +string observaciones
+        +detalles() HasMany
+        +usuario() BelongsTo
+        +autorizaVenta() bool
+    }
+
+    class SalidaDetalle {
+        +int id
+        +int salida_id
+        +int variante_id
+        +int unidad_id
+        +int cantidad
+        +int cantidad_vendida
+        +decimal cantidad_original
+        +decimal precio_unitario
+        +decimal subtotal
+        +salida() BelongsTo
+        +variante() BelongsTo
+        +ventaDetalles() BelongsToMany
+        +saldoDisponible() int
+    }
+
+    class SalidaVentaService {
+        +saldoDisponible(varianteId) int
+        +saldosPorVariante() array
+        +consumir(varianteId, cantidad, ventaDetalleId) void
+        +liberar(ventaDetalleId) void
+        +liberarVenta(ventaId) void
+        +salidaTieneVendidos(salidaId) bool
+    }
+
+    Cliente "1" --> "0..N" Venta : adquiere
+    Venta "1" --> "1..N" VentaDetalle : contiene
+    Venta "1" --> "0..N" Pago : recibe
+    Salida "1" --> "1..N" SalidaDetalle : contiene
+    SalidaDetalle "N" --> "N" VentaDetalle : vincula
+    SalidaVentaService ..> SalidaDetalle : consume
+    SalidaVentaService ..> VentaDetalle : relaciona

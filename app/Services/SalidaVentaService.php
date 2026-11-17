@@ -44,6 +44,7 @@ class SalidaVentaService
             ->select('sd.product_variant_id', DB::raw('SUM(sd.cantidad - sd.cantidad_vendida) as saldo'))
             ->groupBy('sd.product_variant_id')
             ->having('saldo', '>', 0)
+            ->orderBy('sd.product_variant_id')
             ->pluck('saldo', 'product_variant_id')
             ->map(fn ($saldo) => (int) $saldo)
             ->all();
@@ -51,8 +52,8 @@ class SalidaVentaService
 
     /**
      * Consume $cantidad del saldo autorizado de la variante,
-     * asignando los lotes de salida disponibles por orden de fecha.
-     * Registra la relación en la tabla pivote.
+     * asignando las líneas de salida disponibles por FEFO (primero
+     * el lote que caduca antes). Registra la relación en el pivote.
      */
     public function consumir(int $productVariantId, int $cantidad, int $ventaDetalleId): void
     {
@@ -60,10 +61,13 @@ class SalidaVentaService
 
         $detalles = SalidaDetalle::query()
             ->join('salidas as s', 's.id', '=', 'salida_detalles.salida_id')
+            ->leftJoin('lotes as l', 'l.id', '=', 'salida_detalles.lote_id')
             ->where('s.motivo', Salida::MOTIVO_VENTA)
             ->where('s.estado', 'activo')
             ->where('salida_detalles.product_variant_id', $productVariantId)
             ->whereColumn('salida_detalles.cantidad_vendida', '<', 'salida_detalles.cantidad')
+            ->orderByRaw('l.fecha_caducidad IS NULL')
+            ->orderBy('l.fecha_caducidad')
             ->orderBy('s.fecha')
             ->orderBy('s.id')
             ->select('salida_detalles.*')

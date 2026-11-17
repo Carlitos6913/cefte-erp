@@ -2,6 +2,8 @@
 import { useForm } from '@inertiajs/vue3'
 import { ref } from 'vue'
 
+import FormField from '@/Components/UI/FormField.vue'
+
 const passwordInput = ref(null)
 const currentPasswordInput = ref(null)
 
@@ -71,41 +73,56 @@ const actualizar = () => {
                     Cancelar
                 </button>
 
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Contraseña actual *</label>
+                <FormField
+                    label="Contraseña actual"
+                    forId="profile-current-password"
+                    :error="form.errors.current_password"
+                    required
+                >
                     <input
+                        id="profile-current-password"
                         ref="currentPasswordInput"
                         v-model="form.current_password"
                         type="password"
                         autocomplete="current-password"
-                        class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition"
-                        :class="form.errors.current_password ? 'border-red-300 bg-red-50/50' : ''"
+                        class="form-input"
+                        :class="{ 'is-invalid': form.errors.current_password }"
                     />
-                    <p v-if="form.errors.current_password" class="text-xs text-red-500 mt-1">{{ form.errors.current_password }}</p>
-                </div>
+                </FormField>
 
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Nueva contraseña *</label>
+                <FormField
+                    label="Nueva contraseña"
+                    forId="profile-password"
+                    :error="form.errors.password"
+                    hint="Mínimo 8 caracteres."
+                    required
+                >
                     <input
+                        id="profile-password"
                         ref="passwordInput"
                         v-model="form.password"
                         type="password"
                         autocomplete="new-password"
-                        class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition"
-                        :class="form.errors.password ? 'border-red-300 bg-red-50/50' : ''"
+                        class="form-input"
+                        :class="{ 'is-invalid': form.errors.password }"
                     />
-                    <p v-if="form.errors.password" class="text-xs text-red-500 mt-1">{{ form.errors.password }}</p>
-                </div>
+                </FormField>
 
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Confirmar *</label>
+                <FormField
+                    label="Confirmar contraseña"
+                    forId="profile-password-confirmation"
+                    :error="form.errors.password_confirmation"
+                    required
+                >
                     <input
+                        id="profile-password-confirmation"
                         v-model="form.password_confirmation"
                         type="password"
                         autocomplete="new-password"
-                        class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition"
+                        class="form-input"
+                        :class="{ 'is-invalid': form.errors.password_confirmation }"
                     />
-                </div>
+                </FormField>
 
                 <div class="flex items-center gap-3 pt-1">
                     <button
